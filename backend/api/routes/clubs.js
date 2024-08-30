@@ -5,7 +5,7 @@ const path = require('path');
 const router = express.Router();
 
 router.get("/", (req, res, next) => {
-    const filePath = path.join('./data/', 'data.txt');
+    const filePath = path.join('./data/', 'data.json');
 
     fs.readFile(filePath, 'utf8', (err, data) => {
         if (err) {
