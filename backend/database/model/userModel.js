@@ -1,18 +1,6 @@
-const mongoose = require('mongoose');
+const mongoose = require('../../config/databaseConfig');
 const Schema = mongoose.Schema;
-
-
-const associationSchema = new Schema({
-    club_name: {
-        type: String,
-        required: true,
-    },
-    role: {
-        type: String,
-        required: true,
-        default : "Member"
-    },
-});
+const Association = import('./associationModel');
 
 const userSchema = new Schema({
     name: {
@@ -24,7 +12,7 @@ const userSchema = new Schema({
         required: true,
         match: /.+@.+\..+/,
     },
-    associations: [associationSchema]
+    associations: [Association]
 });
 
 const User = mongoose.model('User', userSchema);

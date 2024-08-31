@@ -1,26 +1,19 @@
 const express = require('express');
-const fs = require('fs');
-const path = require('path');
+const Club = require('../../database/model/clubModel')
+const mongoose = require("../../config/databaseConfig");
 
 const router = express.Router();
 
-router.get("/", (req, res, next) => {
-    const filePath = path.join('./database/' + 'database.json');
-
-    fs.readFile(filePath, 'utf8', (err, data) => {
-        if (err) {
-            res.status(500).send('Error reading file');
-            return;
-        }
-
-        try {
-            const jsonData = JSON.parse(data);
-            res.status(200).json(jsonData);
-        } catch (e) {
-            console.log(e)
-            res.status(400).send('Invalid JSON format');
-        }
-    });
+/**Get all clubs*/
+router.get("/", async (req, res, next) => {
+    try {
+        const clubs = await Club.find().exec();
+        res.status(200).json(clubs);
+    } catch (error) {
+        console.error('Error retrieving clubs:', error);
+        res.status(500).json({message: 'Failed to retrieve clubs'});
+    }
 })
+
 
 module.exports = router;

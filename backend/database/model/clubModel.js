@@ -1,7 +1,6 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
-const User = require('./userModel');
+const mongoose = require('../../config/databaseConfig');
 
+const Schema = mongoose.Schema;
 const clubSchema = new Schema({
     title: {
         type: String,
@@ -13,14 +12,12 @@ const clubSchema = new Schema({
     },
     cabinet: [
         {
-            type: Schema.Types.ObjectId,
-            ref: 'User',
-            required: true,
+            name: String,
+            email: String
         }
     ],
     imageUrl: {
         type: String,
-        required: true,
     },
 });
 
