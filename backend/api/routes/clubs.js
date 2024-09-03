@@ -39,9 +39,7 @@ router.get('/:id', async (req, res, next) => {
 
     let cabinet = []
 
-    for (let i in club.cabinet) {
-        let member = club.cabinet[i]
-
+    for (let member of club.cabinet) {
         let user
         try {
             user = await User.findById(member.userId).exec()
