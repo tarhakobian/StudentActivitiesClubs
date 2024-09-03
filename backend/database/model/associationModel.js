@@ -2,13 +2,16 @@ const mongoose = require('../../config/databaseConfig');
 
 const Schema = mongoose.Schema;
 const associationSchema = new Schema({
-    club_name: {
-        type: String,
-        required: true,
+    userId: {
+        type: Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    clubId: {
+        type: Schema.Types.ObjectId,
+        ref: 'Club',
     },
     role: {
         type: String,
-        required: true,
         default: "Member"
     },
 });

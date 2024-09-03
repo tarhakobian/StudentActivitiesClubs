@@ -1,6 +1,5 @@
 const mongoose = require('../../config/databaseConfig');
 const Schema = mongoose.Schema;
-const Association = import('./associationModel');
 
 const userSchema = new Schema({
     name: {
@@ -11,7 +10,10 @@ const userSchema = new Schema({
         type: String,
         required: true,
     },
-    associations: [Association]
+    associations: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Association'
+    }]
 });
 
 const User = mongoose.model('User', userSchema);
