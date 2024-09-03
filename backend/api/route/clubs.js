@@ -1,5 +1,5 @@
 const express = require('express');
-const {getAllClubs, getClubById} = require('../service/clubService');
+const {getAllClubs, getClubById, getClubMembers} = require('../service/clubService');
 
 const router = express.Router();
 
@@ -15,15 +15,28 @@ router.get("/", async (req, res) => {
 });
 
 /** Get club by ID */
-router.get('/:id', async (req, res) => {
-    const id = req.params['id'];
+router.get('/:clubId', async (req, res) => {
+    const clubId = req.params['clubId'];
+
     try {
-        const club = await getClubById(id);
+        const club = await getClubById(clubId);
         res.status(200).json(club);
     } catch (error) {
-        console.error(`Error retrieving club with id ${id}:`, error.message);
+        console.error(`Error retrieving club with id ${clubId}:`, error.message);
         res.status(404).send(error.message);
     }
 });
+
+/**Get club members*/
+router.get("/:clubId/members", async (req, res) => {
+    const clubId = req.params['clubId']
+
+    try {
+        const clubMembers = await getClubMembers(clubId)
+        res.status(200).json(clubMembers)
+    } catch (error) {
+        res.status(400).send(error.message)
+    }
+})
 
 module.exports = router;

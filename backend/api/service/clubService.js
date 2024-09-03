@@ -54,7 +54,25 @@ async function getClubById(id) {
         content: club.content,
         cabinet: cabinet,
         imageUrl: club.imageUrl
-    };
+    }
 }
 
-module.exports = {getAllClubs, getClubById};
+/**Get club members*/
+async function getClubMembers(clubId) {
+    const clubAssociations = await Association.find({clubId: clubId}).exec()
+
+    const userPromises = clubAssociations.map(association =>
+        User.findOne({_id: association.userId}).exec())
+
+    const users = await Promise.all(userPromises)
+
+    return users.map((user, index) => {
+        return {
+            name: user.name,
+            email: user.email,
+            role: clubAssociations[index].role
+        }
+    })
+}
+
+module.exports = {getAllClubs, getClubById, getClubMembers};
