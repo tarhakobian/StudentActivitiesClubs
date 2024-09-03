@@ -33,7 +33,7 @@ Make sure you have Node.js installed on your machine.
     {
    "name": "backend",
    "version": "1.0.0",
-   "main": "index.js",
+   "main": "server.js",
    "scripts": {
    "test": "echo \"Error: no test specified\" && exit 1",
    "start": "nodemon server.js",
