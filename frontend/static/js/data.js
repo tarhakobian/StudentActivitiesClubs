@@ -105,7 +105,7 @@ const data = [
             "Mission: Our mission is to promote the understanding of how the pre-health \n" +
             "route for students works by giving students access to healthcare \n" +
             "professionals that can guide students and provide reliable advice for \n" +
-            "pre-health routes. We encourage student involvement and promote service \n" +
+            "pre-health route. We encourage student involvement and promote service \n" +
             "activities within said community without discrimination. Our purpose is to \n" +
             "act as a medium for the members in pre-health objectives.\n Meeting Date & Time: To be decided",
         president: {

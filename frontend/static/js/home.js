@@ -1,7 +1,7 @@
 const searchInput = document.getElementById('search-input');
 const clubItems = document.querySelectorAll('.club-item');
 
-searchInput.addEventListener('input', function() {
+searchInput.addEventListener('input', function () {
     const searchQuery = searchInput.value.toLowerCase();
     clubItems.forEach(item => {
         const clubName = item.querySelector('p').textContent.toLowerCase();

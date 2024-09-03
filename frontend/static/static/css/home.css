@@ -1,11 +1,11 @@
 body {
-    font-family:system-ui;
+    font-family: system-ui;
     margin: 0;
     padding: 0;
     background-color: #f4f4f4;
 }
 
-.logo{
+.logo {
     display: flex;
     text-align: left;
     display: grid
@@ -39,6 +39,7 @@ body {
     margin: 10px;
 
 }
+
 .navbar ul li a {
     text-decoration: none;
     color: #9d0000;
@@ -201,7 +202,7 @@ body {
 
 h2 {
     font-size: 1.2em;
-  margin: 10px 0;
+    margin: 10px 0;
     color: #333;
 }
 
@@ -292,7 +293,7 @@ h2 {
 
 .instagram {
     font-size: 16px;
-    padding:0px 0px;
+    padding: 0px 0px;
     text-decoration: none;
     color: #f9f9f9;
     margin-left: -10px
@@ -304,7 +305,7 @@ h2 {
     height: 30px;
     margin-top: -6px;
     margin-left: -6px;
-    
+
 }
 
 .footer-bottom {

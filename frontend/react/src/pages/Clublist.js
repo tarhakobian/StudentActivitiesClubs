@@ -4,13 +4,13 @@ import SearchInput from "../components/SearchInput";
 import ClubsPictures from "../components/ClubsPictures";
 
 function Clublist() {
-  return (
-    <div>
-      <Header />
-      <SearchInput />
-      <ClubsPictures />
-    </div>
-  );
+    return (
+        <div>
+            <Header/>
+            <SearchInput/>
+            <ClubsPictures/>
+        </div>
+    );
 }
 
 export default Clublist;
