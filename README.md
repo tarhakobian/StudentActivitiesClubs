@@ -37,7 +37,6 @@ Make sure you have Node.js installed on your machine.
    "scripts": {
    "test": "echo \"Error: no test specified\" && exit 1",
    "start": "nodemon server.js",
-   "pop" : "node ./database/populate.js",
    "mig" : "node ./database/migrate.js"
    },
    "keywords": [],
