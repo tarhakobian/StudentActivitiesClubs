@@ -12,8 +12,11 @@ const clubSchema = new Schema({
     },
     cabinet: [
         {
-            type: Schema.Types.ObjectId,
-            ref: 'User'
+            userId: {
+                type: Schema.Types.ObjectId,
+                ref: 'User'
+            },
+            role: String
         }
     ],
     imageUrl: {
