@@ -68,7 +68,7 @@ async function getClubMembers(clubId) {
 
     return users.map((user, index) => {
         return {
-            userId:user._id,
+            userId: user._id,
             name: user.name,
             email: user.email,
             role: clubAssociations[index].role
@@ -76,4 +76,40 @@ async function getClubMembers(clubId) {
     })
 }
 
-module.exports = {getAllClubs, getClubById, getClubMembers};
+
+async function joinClub(clubId, userId) {
+    let club = await Club.findById(clubId).exec()
+
+    if (!club) {
+        throw new Error(`Club with id - ${clubId} doesn't exist`)
+    }
+
+    let user = await User.findById(userId).exec();
+
+    if (!user) {
+        throw new Error(`User with id - ${userId} doesn't exist`)
+    }
+
+    const duplicateAssociation = await Association.findOne({
+        clubId: clubId,
+        userId: userId
+    }).exec()
+
+    if (duplicateAssociation) {
+        throw new Error("Duplicate association")
+    }
+
+    const association = await new Association({
+        clubId: clubId,
+        userId: userId,
+        role: "Member"
+    }).save()
+
+
+    user.associations.push(association)
+
+    await user.save()
+}
+
+
+module.exports = {getAllClubs, getClubById, getClubMembers, joinClub};

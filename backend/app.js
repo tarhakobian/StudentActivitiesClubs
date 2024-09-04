@@ -1,7 +1,7 @@
 const express = require('express')
 
-const clubRoutes = require("./api/route/clubs")
-const userRoutes = require('./api/route/users')
+const clubRoutes = require("./api/route/clubsRoute")
+const userRoutes = require('./api/route/usersRoute')
 
 const app = express()
 

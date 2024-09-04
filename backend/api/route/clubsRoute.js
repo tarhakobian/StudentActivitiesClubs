@@ -1,5 +1,6 @@
 const express = require('express');
-const {getAllClubs, getClubById, getClubMembers} = require('../service/clubService');
+const {getAllClubs, getClubById, getClubMembers, joinClub} = require('../service/clubService');
+const {authenticateToken} = require('../service/authService')
 
 const router = express.Router();
 
@@ -37,6 +38,20 @@ router.get("/:clubId/members", async (req, res) => {
     } catch (error) {
         res.status(400).send(error.message)
     }
+})
+
+router.post("/join/:clubId", authenticateToken, async (req, res, next) => {
+    try {
+        const clubId = req.params['clubId']
+        const userId = req.user.userId
+
+        await joinClub(clubId, userId)
+
+        res.status(200).send(clubId)
+    } catch (error) {
+        res.status(500).send(error.message)
+    }
+
 })
 
 module.exports = router;

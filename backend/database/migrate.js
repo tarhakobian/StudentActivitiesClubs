@@ -1,6 +1,7 @@
 const data = require("./data");
 const Club = require('./model/clubModel');
 const User = require('./model/userModel');
+const bcrypt = require("bcrypt")
 const Association = require("./model/associationModel");
 
 const saveData = async () => {
@@ -31,7 +32,8 @@ const saveData = async () => {
                 //Save the user
                 const user = await new User({
                     name: member.name,
-                    email: `${member.name.replace(/\s+/g, "")}@student.glendale.edu`
+                    email: `${member.name.replace(/\s+/g, "")}@student.glendale.edu`,
+                    password: bcrypt.hash("123456", 10).toString()
                 }).save()
 
                 //Add user to cabinet
