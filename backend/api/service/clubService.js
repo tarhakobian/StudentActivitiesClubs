@@ -2,7 +2,6 @@ const Club = require('../../database/model/clubModel');
 const User = require('../../database/model/userModel');
 const Association = require('../../database/model/associationModel');
 
-/** Get all clubs */
 async function getAllClubs() {
     const clubs = await Club.find().exec();
     return clubs.map(club => ({
@@ -12,7 +11,6 @@ async function getAllClubs() {
     }));
 }
 
-/** Get a single club by ID */
 async function getClubById(id) {
     const club = await Club.findById(id).exec();
     if (!club) {
@@ -57,8 +55,9 @@ async function getClubById(id) {
     }
 }
 
-/**Get club members*/
-async function getClubMembers(clubId) {
+async function getClubMembers(clubId, userId) {
+    await ensureOwnership(clubId, userId)
+
     const clubAssociations = await Association.find({clubId: clubId}).exec()
 
     const userPromises = clubAssociations.map(association =>
@@ -109,6 +108,17 @@ async function joinClub(clubId, userId) {
     user.associations.push(association)
 
     await user.save()
+}
+
+async function ensureOwnership(clubId, userId) {
+    const association = await Association.findOne({
+        clubId: clubId,
+        userId: userId
+    }).exec()
+
+    if (!association) {
+        throw new Error("Club ownership rejected")
+    }
 }
 
 

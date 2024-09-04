@@ -1,10 +1,10 @@
 const express = require('express');
+const User = require('../../database/model/userModel')
 const {getAllClubs, getClubById, getClubMembers, joinClub} = require('../service/clubService');
-const {authenticateToken} = require('../service/authService')
+const {authenticate} = require('../service/authService')
 
 const router = express.Router();
 
-/** Get all clubs */
 router.get("/", async (req, res) => {
     try {
         const clubs = await getAllClubs();
@@ -15,9 +15,12 @@ router.get("/", async (req, res) => {
     }
 });
 
-/** Get club by ID */
 router.get('/:clubId', async (req, res) => {
     const clubId = req.params['clubId'];
+
+    const user = User.findOne({
+        _id: req.user.userId
+    })
 
     try {
         const club = await getClubById(clubId);
@@ -28,19 +31,19 @@ router.get('/:clubId', async (req, res) => {
     }
 });
 
-/**Get club members*/
-router.get("/:clubId/members", async (req, res) => {
+router.get("/:clubId/members", authenticate, async (req, res) => {
     const clubId = req.params['clubId']
 
     try {
-        const clubMembers = await getClubMembers(clubId)
+        const clubMembers = await getClubMembers(clubId, req.user.userId)
         res.status(200).json(clubMembers)
     } catch (error) {
         res.status(400).send(error.message)
     }
 })
 
-router.post("/join/:clubId", authenticateToken, async (req, res, next) => {
+
+router.post("/join/:clubId", authenticate, async (req, res, next) => {
     try {
         const clubId = req.params['clubId']
         const userId = req.user.userId

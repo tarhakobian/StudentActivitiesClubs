@@ -1,6 +1,5 @@
 const express = require('express');
 const {register, login} = require('../service/userService')
-const {json} = require("express");
 
 const router = express.Router();
 
