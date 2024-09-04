@@ -1,5 +1,6 @@
 const express = require('express');
-const {register, login} = require('../service/userService')
+const {register, login, getUserProfileData} = require('../service/userService')
+const {authenticate} = require("../service/authService");
 
 const router = express.Router();
 
@@ -31,5 +32,17 @@ router.post('/login', async (req, res) => {
 
     res.status(200).send(token)
 });
+
+router.get('/info/:userId/', authenticate, async (req, res, next) => {
+    const targetUserId = req.params['userId']
+    const userId = req.user.userId
+
+    try {
+        const targetUserData = await getUserProfileData(userId, targetUserId)
+        res.status(200).json(targetUserData)
+    } catch (error) {
+        res.status(500).send(error.message)
+    }
+})
 
 module.exports = router;

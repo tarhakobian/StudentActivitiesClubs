@@ -1,4 +1,5 @@
 const User = require("../../database/model/userModel");
+const Association = require('../../database/model/associationModel')
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
@@ -44,5 +45,35 @@ async function login(email, password) {
     return token
 }
 
-module.exports = {register, login}
+async function getUserProfileData(userId, targetUserId) {
+    let user = await User.findOne({
+        _id: userId
+    }).exec()
+
+    let targetUser = User.findOne({
+        _id: targetUserId
+    }).exec()
+
+    if (!user) {
+        throw new Error(`User not found with id -${userId}`)
+    } else if (!targetUser) {
+        throw new Error(`User not found with id -${targetUserId}`)
+    }
+
+    let userAssociations = user.associations.map(a => a.clubId)
+
+    const commonClubIds = targetUser.associations.filter(a => userAssociations.contains(a.clubId))
+
+    let targetUserData = {
+        userId: targetUser._id,
+        name: targetUser.name,
+        email: targetUser.email,
+        profileImageUrl: targetUser.profileImageUrl,
+        commonClubIds: commonClubIds
+    }
+
+    return targetUserData
+}
+
+module.exports = {register, login, getUserProfileData}
 

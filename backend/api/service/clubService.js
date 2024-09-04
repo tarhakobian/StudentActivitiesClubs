@@ -70,6 +70,7 @@ async function getClubMembers(clubId, userId) {
             userId: user._id,
             name: user.name,
             email: user.email,
+            profileImageUrl: user.profileImageUrl,
             role: clubAssociations[index].role
         }
     })
