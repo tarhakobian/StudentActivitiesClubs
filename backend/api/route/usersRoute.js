@@ -33,6 +33,8 @@ router.post('/login', async (req, res) => {
     res.status(200).send(token)
 });
 
+
+//Other user profile
 router.get('/info/:userId/', authenticate, async (req, res, next) => {
     const targetUserId = req.params['userId']
     const userId = req.user.userId

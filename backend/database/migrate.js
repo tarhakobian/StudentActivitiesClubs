@@ -34,7 +34,7 @@ const saveData = async () => {
                     name: member.name,
                     email: `${member.name.replace(/\s+/g, "")}@student.glendale.edu`,
                     password: bcrypt.hash("123456", 10).toString(),
-                    profileImageUrl : 'https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.istockphoto.com%2Fphotos%2Fuser-profile&psig=AOvVaw2fKyfXwYmS5ntFVgwcfcnX&ust=1725521939159000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCKjFyqXkqIgDFQAAAAAdAAAAABAE'
+                    profileImageUrl: 'https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.istockphoto.com%2Fphotos%2Fuser-profile&psig=AOvVaw2fKyfXwYmS5ntFVgwcfcnX&ust=1725521939159000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCKjFyqXkqIgDFQAAAAAdAAAAABAE'
                 }).save()
 
                 //Add user to cabinet

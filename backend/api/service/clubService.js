@@ -48,6 +48,7 @@ async function getClubById(id) {
     });
 
     return {
+        clubId: club._id,
         title: club.title,
         content: club.content,
         cabinet: cabinet,

@@ -18,10 +18,6 @@ router.get("/", async (req, res) => {
 router.get('/:clubId', async (req, res) => {
     const clubId = req.params['clubId'];
 
-    const user = User.findOne({
-        _id: req.user.userId
-    })
-
     try {
         const club = await getClubById(clubId);
         res.status(200).json(club);

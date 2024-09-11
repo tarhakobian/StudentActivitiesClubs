@@ -41,38 +41,46 @@ async function login(email, password) {
         throw new Error("Password doesnt match")
     }
 
-    const token = jwt.sign({userId: user._id}, process.env.JWT_SECRET, {expiresIn: '24h'});
-    return token
+    return jwt.sign({userId: user._id}, process.env.JWT_SECRET, {expiresIn: '24h'})
 }
 
 async function getUserProfileData(userId, targetUserId) {
-    let user = await User.findOne({
-        _id: userId
-    }).exec()
-
-    let targetUser = User.findOne({
-        _id: targetUserId
-    }).exec()
+    let user = await User.findOne({_id: userId}).exec();
+    let targetUser = await User.findOne({_id: targetUserId}).exec();
 
     if (!user) {
-        throw new Error(`User not found with id -${userId}`)
-    } else if (!targetUser) {
-        throw new Error(`User not found with id -${targetUserId}`)
+        throw new Error(`User not found with id - ${userId}`);
     }
 
-    let userAssociations = user.associations.map(a => a.clubId)
+    if (!targetUser) {
+        throw new Error(`User not found with id - ${targetUserId}`);
+    }
 
-    const commonClubIds = targetUser.associations.filter(a => userAssociations.contains(a.clubId))
 
-    let targetUserData = {
+    //Building associations array with clubIds for user
+    let userAssociationsPromises = user.associations.map(associaition => Association.findOne({_id: associaition._id}));
+
+    let userAssociations = await Promise.all(userAssociationsPromises)
+
+    userAssociations = userAssociations.map(association => association.clubId.toString())
+
+    //Building associations array with clubIds for targetUser
+    let targetUserAssociationsPromises = targetUser.associations.map(associaition => Association.findOne({_id: associaition._id}));
+
+    let targetUserAssociations = await Promise.all(targetUserAssociationsPromises)
+
+    targetUserAssociations = targetUserAssociations.map(association => association.clubId.toString())
+
+    let commonClubIds = (targetUserAssociations && userAssociations && targetUserAssociations.length > 0 && userAssociations.length > 0)
+        ? targetUserAssociations.filter(value => userAssociations.includes(value)) : []
+
+    return {
         userId: targetUser._id,
         name: targetUser.name,
         email: targetUser.email,
         profileImageUrl: targetUser.profileImageUrl,
         commonClubIds: commonClubIds
     }
-
-    return targetUserData
 }
 
 module.exports = {register, login, getUserProfileData}
