@@ -194,6 +194,26 @@ async function editAnnouncement(userId, announcementId, body) {
     return {message: "Announcement updated successfully", announcement};
 }
 
+async function announcementsChangeActiveStatus(announcementId, userId) {
+    const announcement = await Announcement.findById(announcementId).exec();
+
+    if (!announcement) {
+        throw new Error("Announcement not found");
+    }
+
+    const clubId = announcement.clubId;
+
+    const role = await ensureOwnership(clubId, userId);
+
+    if (role === 'Member') {
+        throw new Error("Unauthorized");
+    }
+
+    announcement.isActive = !announcement.isActive
+
+    await announcement.save();
+}
+
 
 async function ensureOwnership(clubId, userId) {
     const user = await User.findById(userId).exec()
@@ -226,4 +246,5 @@ module.exports = {
     deleteAnnouncement,
     editAnnouncement,
     getAllAnnouncements,
+    announcementsChangeActiveStatus
 };

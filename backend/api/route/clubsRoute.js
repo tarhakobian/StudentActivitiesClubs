@@ -5,7 +5,7 @@ const {
     getClubMembers,
     joinClub,
     createAnnouncement,
-    deleteAnnouncement, editAnnouncement, getAllAnnouncements, leaveClub
+    deleteAnnouncement, editAnnouncement, getAllAnnouncements, leaveClub, announcementsChangeActiveStatus
 } = require('../service/clubService');
 
 const {authenticate} = require('../service/authService')
@@ -140,10 +140,23 @@ router.put('/announcements/:announcementId', async (req, res) => {
         }
 
         const announcement = await editAnnouncement(userId, announcementId, body)
-        return res.json({message: "Announcement updated successfully", announcement});
+        return res.status(200).json({message: "Announcement updated successfully", announcement});
     } catch (error) {
         return res.status(500).json({error: `Error updating announcement: ${error.message}`});
     }
+});
+
+router.patch('/announcements/changeActiveStatus/:announcementId', async (req, res) => {
+    const announcementId = req.params['announcementId'];
+    const userId = req.userId;
+
+    try {
+        await announcementsChangeActiveStatus(announcementId, userId);
+    } catch (e) {
+        res.status(500).send(e.message)
+    }
+
+    res.status(200)
 });
 
 
