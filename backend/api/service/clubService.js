@@ -1,6 +1,7 @@
 const Club = require('../../database/model/clubModel');
 const User = require('../../database/model/userModel');
 const Association = require('../../database/model/associationModel');
+const Announcement = require('../../database/model/announcementModel')
 
 async function getAllClubs() {
     const clubs = await Club.find().exec();
@@ -112,7 +113,96 @@ async function joinClub(clubId, userId) {
     await user.save()
 }
 
+async function leaveClub(clubId, userId) {
+    const role = await ensureOwnership(clubId, userId)
+
+    if (role !== 'Member') {
+        throw new Error('Only users with role Member can leave the club')
+    }
+
+    const association = await Association.findOneAndDelete({clubId: clubId, userId: userId}).exec()
+
+    const user = await User.findById(userId).exec();
+    user.associations = user.associations.filter(id => id.toString() !== association._id.toString());
+
+    await user.save()
+}
+
+async function getAllAnnouncements(clubId, userId) {
+    await ensureOwnership(clubId, userId)
+
+    const announcements = await Announcement.find({clubId: clubId, isActive: true})
+        .select('date title content attachments') // Specify fields to include
+        .sort({date: -1});
+
+    return announcements.map(announcement => ({
+        id: announcement._id,
+        date: announcement.date,
+        title: announcement.title,
+        content: announcement.content,
+        attachments: announcement.attachments
+    }));
+}
+
+async function createAnnouncement(announcementDetails) {
+    const role = await ensureOwnership(announcementDetails['clubId'], announcementDetails['authorId'])
+    if (role === 'MEMBER') {
+        throw new Error("Unauthorized action")
+    }
+
+    const announcement = await new Announcement(announcementDetails).save();
+
+    return announcement._id;
+}
+
+
+async function deleteAnnouncement(announcementId, userId) {
+    const announcement = await Announcement.findById(announcementId).exec()
+    const clubId = announcement.clubId
+    const role = await ensureOwnership(clubId, userId)
+
+    if (role === 'Member') {
+        throw new Error("Unauthorized")
+    }
+
+    await Announcement.deleteOne(announcement._id)
+}
+
+async function editAnnouncement(userId, announcementId, body) {
+    const announcement = await Announcement.findById(announcementId).exec();
+
+    if (!announcement) {
+        throw new Error("Announcement not found");
+    }
+
+    const clubId = announcement.clubId;
+
+    const role = await ensureOwnership(clubId, userId);
+
+    if (role === 'Member') {
+        throw new Error("Unauthorized");
+    }
+
+    announcement.title = body.title || announcement.title;
+    announcement.content = body.content || announcement.content;
+    announcement.attachments = body.attachments || announcement.attachments;
+    announcement.lastUpdatedAt = new Date();
+    announcement.lastUpdatedBy = userId;
+
+    await announcement.save();
+
+    return {message: "Announcement updated successfully", announcement};
+}
+
+
 async function ensureOwnership(clubId, userId) {
+    const user = await User.findById(userId).exec()
+    const club = await Club.findById(clubId).exec()
+
+    if (!user || !club) {
+        throw new Error('User or Club is not found')
+    }
+
     const association = await Association.findOne({
         clubId: clubId,
         userId: userId
@@ -121,7 +211,19 @@ async function ensureOwnership(clubId, userId) {
     if (!association) {
         throw new Error("Club ownership rejected")
     }
+
+    return association.role;
 }
 
 
-module.exports = {getAllClubs, getClubById, getClubMembers, joinClub};
+module.exports = {
+    getAllClubs,
+    getClubById,
+    getClubMembers,
+    joinClub,
+    leaveClub,
+    createAnnouncement,
+    deleteAnnouncement,
+    editAnnouncement,
+    getAllAnnouncements,
+};
