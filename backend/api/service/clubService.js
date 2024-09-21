@@ -4,12 +4,9 @@ const Association = require('../../database/model/associationModel');
 const Announcement = require('../../database/model/announcementModel')
 
 async function getAllClubs() {
-    const clubs = await Club.find().exec();
-    return clubs.map(club => ({
-        id: club._id,
-        title: club.title,
-        imageUrl: club.imageUrl
-    }));
+    return await Club.find()
+        .select('_id title imageUrl')
+        .exec();
 }
 
 async function getClubById(id) {
