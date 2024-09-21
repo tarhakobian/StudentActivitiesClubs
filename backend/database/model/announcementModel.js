@@ -5,10 +5,9 @@ const announcementSchema = new mongoose.Schema({
     content: {type: String, required: true},
     authorId: {type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true},
     clubId: {type: mongoose.Schema.Types.ObjectId, ref: 'Club', required: true},
-    date: {type: Date, default: Date.now},
     attachments: [{type: String}],
     isActive: {type: Boolean, default: true},
-    createdAt:{type:Date},
+    createdAt: {type: Date, required: true, default: Date.now()},
     lastUpdatedAt: {type: Date},
     lastUpdatedBy: {type: mongoose.Schema.Types.ObjectId, ref: 'User'}
 });

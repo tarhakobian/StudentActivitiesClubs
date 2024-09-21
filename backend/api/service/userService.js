@@ -3,6 +3,15 @@ const Association = require('../../database/model/associationModel')
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
+async function findUserById(userId) {
+    const user = await User.findById(userId).exec()
+
+    if (!user) {
+        throw new Error(`User with id - ${userId} doesn't exist`)
+    }
+    return user;
+}
+
 async function register(email, password, name) {
     // Check if user already exists
     const existingUser = await User.findOne({email});
@@ -83,5 +92,5 @@ async function getUserProfileData(userId, targetUserId) {
     }
 }
 
-module.exports = {register, login, getUserProfileData}
+module.exports = {register, login, getUserProfileData, findUserById}
 

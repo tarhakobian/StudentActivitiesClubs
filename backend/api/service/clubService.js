@@ -2,6 +2,17 @@ const Club = require('../../database/model/clubModel');
 const User = require('../../database/model/userModel');
 const Association = require('../../database/model/associationModel');
 const Announcement = require('../../database/model/announcementModel')
+const {findUserById} = require('./userService')
+const {ensureOwnership} = require('./authService')
+
+
+async function findClubById(clubId) {
+    const club = await Club.findById(clubId).exec()
+    if (!club) {
+        throw new Error(`Club with id - ${clubId} doesn't exist`)
+    }
+    return club;
+}
 
 async function getAllClubs() {
     return await Club.find()
@@ -10,7 +21,7 @@ async function getAllClubs() {
 }
 
 async function getClubById(id) {
-    const club = await Club.findById(id).exec();
+    const club = await findClubById(id)
     if (!club) {
         throw new Error(`Club with id ${id} is not found`);
     }
@@ -77,17 +88,9 @@ async function getClubMembers(clubId, userId) {
 
 
 async function joinClub(clubId, userId) {
-    let club = await Club.findById(clubId).exec()
-
-    if (!club) {
-        throw new Error(`Club with id - ${clubId} doesn't exist`)
-    }
-
-    let user = await User.findById(userId).exec();
-
-    if (!user) {
-        throw new Error(`User with id - ${userId} doesn't exist`)
-    }
+    // Warning : Unused variable club, needs for checking teh existence of the club with provided clubId
+    let club = await findClubById(clubId)
+    let user = await findUserById(userId);
 
     const duplicateAssociation = await Association.findOne({
         clubId: clubId,
@@ -119,129 +122,17 @@ async function leaveClub(clubId, userId) {
 
     const association = await Association.findOneAndDelete({clubId: clubId, userId: userId}).exec()
 
-    const user = await User.findById(userId).exec();
+    const user = await findUserById(userId);
     user.associations = user.associations.filter(id => id.toString() !== association._id.toString());
 
     await user.save()
 }
 
-async function getAllAnnouncements(clubId, userId) {
-    await ensureOwnership(clubId, userId)
-
-    const announcements = await Announcement.find({clubId: clubId, isActive: true})
-        .select('date title content attachments') // Specify fields to include
-        .sort({date: -1});
-
-    return announcements.map(announcement => ({
-        id: announcement._id,
-        date: announcement.date,
-        title: announcement.title,
-        content: announcement.content,
-        attachments: announcement.attachments
-    }));
-}
-
-async function createAnnouncement(announcementDetails) {
-    const role = await ensureOwnership(announcementDetails['clubId'], announcementDetails['authorId'])
-    if (role === 'MEMBER') {
-        throw new Error("Unauthorized action")
-    }
-
-    const announcement = await new Announcement(announcementDetails).save();
-
-    return announcement._id;
-}
-
-
-async function deleteAnnouncement(announcementId, userId) {
-    const announcement = await Announcement.findById(announcementId).exec()
-    const clubId = announcement.clubId
-    const role = await ensureOwnership(clubId, userId)
-
-    if (role === 'Member') {
-        throw new Error("Unauthorized")
-    }
-
-    await Announcement.deleteOne(announcement._id)
-}
-
-async function editAnnouncement(userId, announcementId, body) {
-    const announcement = await Announcement.findById(announcementId).exec();
-
-    if (!announcement) {
-        throw new Error("Announcement not found");
-    }
-
-    const clubId = announcement.clubId;
-
-    const role = await ensureOwnership(clubId, userId);
-
-    if (role === 'Member') {
-        throw new Error("Unauthorized");
-    }
-
-    announcement.title = body.title || announcement.title;
-    announcement.content = body.content || announcement.content;
-    announcement.attachments = body.attachments || announcement.attachments;
-    announcement.lastUpdatedAt = new Date();
-    announcement.lastUpdatedBy = userId;
-
-    await announcement.save();
-
-    return {message: "Announcement updated successfully", announcement};
-}
-
-async function announcementsChangeActiveStatus(announcementId, userId) {
-    const announcement = await Announcement.findById(announcementId).exec();
-
-    if (!announcement) {
-        throw new Error("Announcement not found");
-    }
-
-    const clubId = announcement.clubId;
-
-    const role = await ensureOwnership(clubId, userId);
-
-    if (role === 'Member') {
-        throw new Error("Unauthorized");
-    }
-
-    announcement.isActive = !announcement.isActive
-
-    await announcement.save();
-}
-
-
-async function ensureOwnership(clubId, userId) {
-    const user = await User.findById(userId).exec()
-    const club = await Club.findById(clubId).exec()
-
-    if (!user || !club) {
-        throw new Error('User or Club is not found')
-    }
-
-    const association = await Association.findOne({
-        clubId: clubId,
-        userId: userId
-    }).exec()
-
-    if (!association) {
-        throw new Error("Club ownership rejected")
-    }
-
-    return association.role;
-}
-
-
 module.exports = {
+    findClubById,
     getAllClubs,
     getClubById,
     getClubMembers,
     joinClub,
     leaveClub,
-    createAnnouncement,
-    deleteAnnouncement,
-    editAnnouncement,
-    getAllAnnouncements,
-    announcementsChangeActiveStatus
 };

@@ -4,11 +4,17 @@ const {
     getClubById,
     getClubMembers,
     joinClub,
-    createAnnouncement,
-    deleteAnnouncement, editAnnouncement, getAllAnnouncements, leaveClub, announcementsChangeActiveStatus
+    leaveClub,
 } = require('../service/clubService');
+const {
+    createAnnouncement,
+    deleteAnnouncement,
+    editAnnouncement,
+    getAllAnnouncements, announcementsChangeActiveStatus
+} = require('../service/announcementService')
 
 const {authenticate} = require('../service/authService')
+const {createMeeting} = require('../service/meetingService')
 
 const router = express.Router();
 
@@ -70,9 +76,7 @@ router.patch("/leave/:clubId", authenticate, async (req, res, next) => {
     } catch (error) {
         res.status(500).send(error.message)
     }
-
 })
-
 
 router.get('/announcements/:clubId', authenticate, async (req, res, next) => {
     const userId = req.user.userId
@@ -93,18 +97,13 @@ router.post('/announcements', authenticate, async (req, res) => {
         }
 
         const announcementDetails = {
-            title: title,
-            content: content,
-            authorId: userId,
-            clubId: clubId,
-            attachments: attachments || [],
+            title: title, content: content, authorId: userId, clubId: clubId, attachments: attachments || [],
         };
 
         const announcementId = await createAnnouncement(announcementDetails);
 
         res.status(201).json({
-            message: 'Announcement created successfully',
-            announcement: announcementId,
+            message: 'Announcement created successfully', announcement: announcementId,
         });
     } catch (err) {
         console.error('Error creating announcement:', err);
@@ -128,6 +127,7 @@ router.delete('/announcements/:announcementId', authenticate, async (req, res, n
 
     res.status(200).send("Successfully deleted")
 })
+
 router.put('/announcements/:announcementId', async (req, res) => {
     const announcementId = req.params['announcementId'];
     const userId = req.userId;
@@ -158,6 +158,46 @@ router.patch('/announcements/changeActiveStatus/:announcementId', async (req, re
 
     res.status(200)
 });
+
+router.post('/meetings', async (req, res) => {
+    try {
+        const meeting = await createMeeting(req.body);
+        return res.status(201).json(meeting);
+    } catch (error) {
+        return res.status(400).json({error: error.message});
+    }
+});
+
+
+// Get all meetings for a specific club
+// router.get('/meetings/:clubId', async (req, res) => {
+//     try {
+//         const meetings = await meetingService.getAllMeetings(req.params.clubId);
+//         return res.json(meetings);
+//     } catch (error) {
+//         return res.status(500).json({error: error.message});
+//     }
+// });
+//
+// // Update a meeting
+// router.put('/meetings/:meetingId', async (req, res) => {
+//     try {
+//         const meeting = await meetingService.updateMeeting(req.params.meetingId, req.body);
+//         return res.json(meeting);
+//     } catch (error) {
+//         return res.status(404).json({error: error.message});
+//     }
+// });
+//
+// // Delete a meeting
+// router.delete('/meetings/:meetingId', async (req, res) => {
+//     try {
+//         const meeting = await meetingService.deleteMeeting(req.params.meetingId);
+//         return res.json({message: "Meeting deleted successfully", meeting});
+//     } catch (error) {
+//         return res.status(404).json({error: error.message});
+//     }
+// });
 
 
 module.exports = router;

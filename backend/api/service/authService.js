@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const Association = require("../../database/model/associationModel");
 const authenticate = (req, res, next) => {
     const token = req.header('Authorization');
 
@@ -16,4 +17,25 @@ const authenticate = (req, res, next) => {
     }
 };
 
-module.exports = {authenticate};
+async function ensureOwnership(clubId, userId) {
+    const user = await getClubById(clubId)
+    const club = await findClubById(clubId)
+
+    if (!user || !club) {
+        throw new Error('User or Club is not found')
+    }
+
+    const association = await Association.findOne({
+        clubId: clubId,
+        userId: userId
+    }).exec()
+
+    if (!association) {
+        throw new Error("Club ownership rejected")
+    }
+
+    return association.role;
+}
+
+
+module.exports = {authenticate, ensureOwnership};
