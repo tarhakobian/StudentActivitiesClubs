@@ -4,7 +4,7 @@ mongoose.connect(process.env.MONGO_URL)
     .then(r => console.log("Connected to the database"))
     .catch(reason => {
         console.log(`Database connection Failed --- ${reason}`)
-        process.exit(0);
+        process.exit(-1);
     })
 
 module.exports = mongoose
