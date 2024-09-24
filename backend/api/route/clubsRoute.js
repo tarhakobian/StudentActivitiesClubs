@@ -13,8 +13,8 @@ const {
     getAllAnnouncements, announcementsChangeActiveStatus
 } = require('../service/announcementService')
 
-const {authenticate} = require('../service/authService')
-const {createMeeting} = require('../service/meetingService')
+const { authenticate } = require('../midlewear/securityMidlwear')
+const { createMeeting } = require('../service/meetingService')
 
 const router = express.Router();
 
@@ -24,7 +24,7 @@ router.get("/", async (req, res) => {
         res.status(200).json(clubs);
     } catch (error) {
         console.error('Error retrieving clubs:', error.message);
-        res.status(500).json({message: 'Failed to retrieve clubs'});
+        res.status(500).json({ message: 'Failed to retrieve clubs' });
     }
 });
 
@@ -89,11 +89,11 @@ router.get('/announcements/:clubId', authenticate, async (req, res, next) => {
 
 router.post('/announcements', authenticate, async (req, res) => {
     try {
-        const {title, content, clubId, attachments} = req.body;
+        const { title, content, clubId, attachments } = req.body;
         const userId = req.user.userId
 
         if (!title || !content || !clubId) {
-            return res.status(400).json({message: 'Missing required fields'});
+            return res.status(400).json({ message: 'Missing required fields' });
         }
 
         const announcementDetails = {
@@ -107,7 +107,7 @@ router.post('/announcements', authenticate, async (req, res) => {
         });
     } catch (err) {
         console.error('Error creating announcement:', err);
-        res.status(500).json({message: 'Internal server error'});
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 
@@ -136,13 +136,13 @@ router.put('/announcements/:announcementId', async (req, res) => {
     try {
 
         if (!body.title && !body.content && !body.attachments) {
-            return res.status(400).json({error: "No fields to update"});
+            return res.status(400).json({ error: "No fields to update" });
         }
 
         const announcement = await editAnnouncement(userId, announcementId, body)
-        return res.status(200).json({message: "Announcement updated successfully", announcement});
+        return res.status(200).json({ message: "Announcement updated successfully", announcement });
     } catch (error) {
-        return res.status(500).json({error: `Error updating announcement: ${error.message}`});
+        return res.status(500).json({ error: `Error updating announcement: ${error.message}` });
     }
 });
 
@@ -164,7 +164,7 @@ router.post('/meetings', async (req, res) => {
         const meeting = await createMeeting(req.body);
         return res.status(201).json(meeting);
     } catch (error) {
-        return res.status(400).json({error: error.message});
+        return res.status(400).json({ error: error.message });
     }
 });
 

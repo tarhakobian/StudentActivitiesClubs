@@ -19,7 +19,7 @@ async function getAllAnnouncements(clubId, userId) {
 
 async function createAnnouncement(announcementDetails) {
     const role = await ensureOwnership(announcementDetails['clubId'], announcementDetails['authorId'])
-    if (role === 'MEMBER') {
+    if (role === 'Member') {
         throw new Error("Unauthorized action")
     }
 

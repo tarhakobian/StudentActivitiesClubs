@@ -1,25 +1,12 @@
-const jwt = require('jsonwebtoken');
 const Association = require("../../database/model/associationModel");
-const authenticate = (req, res, next) => {
-    const token = req.header('Authorization');
-
-    if (!token) {
-        return res.status(401).json({message: 'Access denied. No token provided.'});
-    }
-
-    try {
-        // Verify token
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded;
-        next();
-    } catch (error) {
-        res.status(400).json({message: 'Invalid token'});
-    }
-};
+const Club = require("../../database/model/clubModel");
+const User = require("../../database/model/userModel");
+// const { findUserById } = require('./userService');
+// const { findClubById } = require('./clubService');
 
 async function ensureOwnership(clubId, userId) {
-    const user = await getClubById(clubId)
-    const club = await findClubById(clubId)
+    const user = await User.findById(userId).exec();
+    const club = await Club.findById(clubId).exec();
 
     if (!user || !club) {
         throw new Error('User or Club is not found')
@@ -30,6 +17,7 @@ async function ensureOwnership(clubId, userId) {
         userId: userId
     }).exec()
 
+
     if (!association) {
         throw new Error("Club ownership rejected")
     }
@@ -38,4 +26,4 @@ async function ensureOwnership(clubId, userId) {
 }
 
 
-module.exports = {authenticate, ensureOwnership};
+module.exports = { ensureOwnership };

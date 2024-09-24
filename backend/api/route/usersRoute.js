@@ -1,6 +1,6 @@
 const express = require('express');
 const {register, login, getUserProfileData} = require('../service/userService')
-const {authenticate} = require("../service/authService");
+const {authenticate} = require("../midlewear/securityMidlwear");
 
 const router = express.Router();
 
