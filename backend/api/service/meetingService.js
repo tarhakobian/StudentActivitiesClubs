@@ -2,41 +2,34 @@ const Meeting = require('../../database/model/meetingModel');
 const User = require('../../database/model/userModel');
 const Club = require('../../database/model/clubModel');
 
-const {ensureOwnership} = require('./authService')
-
-async function findMeetingById(meetingId) {
-    const meeting = Meeting.findById(meetingId).exec()
-
-    if (!meeting) {
-        throw new Error(`Meeting with id ${meetingId} not found`);
-    }
-
-    return meeting;
-}
+const { ensureOwnership } = require('./authService')
 
 // Create a new meeting
-async function createMeeting(req) {
-    const userId = req.user.userId
-
-    const {title, agenda, date, location, attachments, clubId} = req.body;
-
+async function createMeeting(clubId, userId,body) {
     const role = await ensureOwnership(clubId, userId)
 
-    if (role === 'Member') {
+    if (role === 'MEMBER') {
         throw new Error("Unauthorized")
     }
 
+    const { title, agenda, date, location, attachments } = body;
+
+    if (!title || !agenda || !date || !location) {
+        throw new Error("All fields (title, agenda, date, location) must be provided and non-null.");
+    }
+
     const meeting = new Meeting({
-        title, agenda, date, location, attachments, authorId: userId, clubId
+        title, agenda, date, location, attachments, authorId: userId, clubId, lastUpdatedAt: new Date, lastUpdatedBy: userId
     });
-    return await meeting.save();
+
+    await meeting.save();
+
+    return meeting._id
 }
 
-// Get all meetings for a club
-async function getAllMeetings(req) {
-    const userId = req.user.userId
-    const clubId = req.params['clubId']
 
+// Get all meetings for a club
+async function getAllMeetings(clubId,userId) {
     await ensureOwnership(clubId, userId)
 
     const meetings = await Meeting.find({
@@ -44,7 +37,7 @@ async function getAllMeetings(req) {
         isActive: true
     }).select('title agenda date location attachments createdAt').exec();
 
-    // meetings.map(m =>)
+    return meetings;
 }
 
 // Get a meeting by ID
@@ -64,6 +57,7 @@ async function updateMeeting(meetingId, updateDetails) {
     // Update fields
     Object.assign(meeting, updateDetails);
     meeting.lastUpdatedAt = new Date();
+    meeting.lastUpdatedBy = 
     await meeting.save();
     return meeting;
 }
@@ -77,29 +71,6 @@ async function deleteMeeting(meetingId) {
     return meeting;
 }
 
-// Add participants to a meeting
-async function addParticipants(meetingId, userIds) {
-    const meeting = await Meeting.findById(meetingId);
-    if (!meeting) {
-        throw new Error(`Meeting with id ${meetingId} not found`);
-    }
-
-    meeting.participants.push(...userIds);
-    await meeting.save();
-    return meeting;
-}
-
-// Remove participants from a meeting
-async function removeParticipant(meetingId, userId) {
-    const meeting = await Meeting.findById(meetingId);
-    if (!meeting) {
-        throw new Error(`Meeting with id ${meetingId} not found`);
-    }
-
-    meeting.participants = meeting.participants.filter(participant => participant.toString() !== userId);
-    await meeting.save();
-    return meeting;
-}
 
 // Toggle meeting active status
 async function toggleMeetingActive(meetingId) {
@@ -119,7 +90,5 @@ module.exports = {
     getMeetingById,
     updateMeeting,
     deleteMeeting,
-    addParticipants,
-    removeParticipant,
     toggleMeetingActive,
 };

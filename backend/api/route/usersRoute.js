@@ -1,50 +1,64 @@
 const express = require('express');
-const {register, login, getUserProfileData} = require('../service/userService')
-const {authenticate} = require("../midlewear/securityMidlwear");
+const { register, login, getUserProfileData } = require('../service/userService');
+const { authenticate } = require("../midlewear/securityMidlwear");
 
 const router = express.Router();
 
-// Register User
+/**
+ * @route POST /register
+ * @desc Register a new user and return a JWT token
+ */
 router.post('/register', async (req, res) => {
-    const email = req.query.email
-    const password = req.query.password
-    const name = req.query.name
+    const { email, password, name } = req.body;
+
+    if (!email || !password || !name) {
+        return res.status(400).json({ message: 'Email, password, and name are required' });
+    }
+
     try {
-        const jwtToken = await register(email, password, name)
-        res.status(200).json(jwtToken);
+        const jwtToken = await register(email, password, name);
+        res.status(201).json({ token: jwtToken });
     } catch (error) {
-        res.status(500).json({message: 'Server error'});
+        console.error('Registration error:', error.message);
+        res.status(500).json({ message: 'Server error' });
     }
 });
 
-// Login User
+/**
+ * @route POST /login
+ * @desc Login a user and return a JWT token
+ */
 router.post('/login', async (req, res) => {
-    const email = req.query.email
-    const password = req.query.password
+    const { email, password } = req.body;
 
-    let token
-
-    try {
-        token = await login(email, password)
-    } catch (error) {
-        res.status(400).json({"message": "Login not successful"})
+    if (!email || !password) {
+        return res.status(400).json({ message: 'Email and password are required' });
     }
 
-    res.status(200).send(token)
+    try {
+        const token = await login(email, password);
+        res.status(200).json({ token });
+    } catch (error) {
+        console.error('Login error:', error.message);
+        res.status(401).json({ message: 'Invalid credentials' });
+    }
 });
 
-
-//Other user profile
-router.get('/info/:userId/', authenticate, async (req, res, next) => {
-    const targetUserId = req.params['userId']
-    const userId = req.user.userId
+/**
+ * @route GET /info/:userId
+ * @desc Get profile information for a specific user
+ */
+router.get('/info/:userId', authenticate, async (req, res) => {
+    const targetUserId = req.params['userId'];
+    const userId = req.user.userId;
 
     try {
-        const targetUserData = await getUserProfileData(userId, targetUserId)
-        res.status(200).json(targetUserData)
+        const targetUserData = await getUserProfileData(userId, targetUserId);
+        res.status(200).json(targetUserData);
     } catch (error) {
-        res.status(500).send(error.message)
+        console.error('Error retrieving user data:', error.message);
+        res.status(500).json({ message: 'Server error' });
     }
-})
+});
 
 module.exports = router;

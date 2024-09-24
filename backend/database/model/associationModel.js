@@ -13,7 +13,6 @@ const associationSchema = new Schema({
     role: {
         type: String,
         default: "Member",
-        require : true
     },
 });
 
