@@ -5,7 +5,7 @@ const Club = require('../../database/model/clubModel');
 const { ensureOwnership } = require('./authService')
 
 // Create a new meeting
-async function createMeeting(clubId, userId,body) {
+async function createMeeting(clubId, userId, body) {
     const role = await ensureOwnership(clubId, userId)
 
     if (role === 'MEMBER') {
@@ -29,27 +29,32 @@ async function createMeeting(clubId, userId,body) {
 
 
 // Get all meetings for a club
-async function getAllMeetings(clubId,userId) {
+async function getAllMeetings(clubId, userId) {
     await ensureOwnership(clubId, userId)
 
     const meetings = await Meeting.find({
         clubId: clubId,
         isActive: true
-    }).select('title agenda date location attachments createdAt').exec();
+    }).select('title agenda date location attachments createdAt').sort({ date: 1 }).exec();
 
     return meetings;
 }
 
 // Get a meeting by ID
-async function getMeetingById(meetingId) {
-    const meeting = await findMeetingById(meetingId);
+async function getMeetingById(clubId, meetingId, userId) {
+    await ensureOwnership(clubId, userId)
+
+    const meeting = await Meeting.findOne({
+        _id: meetingId,
+        isActive: true
+    }).select('title agenda date location createdAt attachments participants').exec();
 
     return meeting;
 }
 
 // Update a meeting
 async function updateMeeting(meetingId, updateDetails) {
-    const meeting = await Meeting.findById(meetingId);
+    const meeting = await Meeting.findById(meetingId).exec();
     if (!meeting) {
         throw new Error(`Meeting with id ${meetingId} not found`);
     }
@@ -57,30 +62,46 @@ async function updateMeeting(meetingId, updateDetails) {
     // Update fields
     Object.assign(meeting, updateDetails);
     meeting.lastUpdatedAt = new Date();
-    meeting.lastUpdatedBy = 
-    await meeting.save();
+    meeting.lastUpdatedBy =
+        await meeting.save();
     return meeting;
 }
 
 // Delete a meeting
-async function deleteMeeting(meetingId) {
-    const meeting = await Meeting.findByIdAndDelete(meetingId);
+async function deleteMeeting(clubId, meetingId, userId) {
+    const role = await ensureOwnership(clubId, userId);
+
+    if (role === "Member") {
+        throw new Error("Unauthorized")
+    }
+
+    const meeting = await Meeting.findByIdAndDelete(meetingId).exec();
+
     if (!meeting) {
         throw new Error(`Meeting with id ${meetingId} not found`);
     }
+
     return meeting;
 }
 
 
 // Toggle meeting active status
-async function toggleMeetingActive(meetingId) {
-    const meeting = await Meeting.findById(meetingId);
+async function toggleMeetingActive(clubId, meetingId, userId) {
+    const role = ensureOwnership(clubId, userId);
+
+    if (role === 'Member') {
+        throw new Error("Unauthorized")
+    }
+
+    const meeting = await Meeting.findById(meetingId).exec();
+
     if (!meeting) {
         throw new Error(`Meeting with id ${meetingId} not found`);
     }
 
     meeting.isActive = !meeting.isActive;
     await meeting.save();
+
     return meeting;
 }
 
