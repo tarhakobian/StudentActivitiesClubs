@@ -1,6 +1,6 @@
 const express = require('express');
-const { createMeeting, deleteMeeting, getAllMeetings, getMeetingById, toggleMeetingActive, updateMeeting } = require('../service/meetingService')
-const { authenticate } = require('../midlewear/securityMidlwear');
+const { createMeeting, deleteMeeting, getAllMeetings, getMeetingById, toggleMeetingActive, updateMeeting } = require('../service/meetingService');
+const { authenticate } = require('../midldewear/securityMiddlewear');
 
 const router = express.Router();
 
@@ -10,7 +10,7 @@ const router = express.Router();
  */
 router.post('/:clubId', authenticate, async (req, res) => {
     try {
-        const userId = req.user.userId
+        const userId = req.user.userId;
         const clubId = req.params['clubId'];
 
         const meeting = await createMeeting(clubId, userId, req.body);
@@ -38,8 +38,28 @@ router.get('/:clubId', authenticate, async (req, res) => {
 });
 
 /**
+ * @route GET /meetings/:clubId/:meetingId
+ * @desc Get a specific meeting by its ID for a specific club
+ */
+router.get('/:clubId/:meetingId', authenticate, async (req, res) => {
+    const { clubId, meetingId } = req.params;
+    const userId = req.user.userId;
+
+    try {
+        const meeting = await getMeetingById(clubId, meetingId, userId);
+        if (!meeting) {
+            return res.status(404).json({ message: 'Meeting not found or inactive' });
+        }
+        res.status(200).json(meeting);
+    } catch (error) {
+        console.error('Error fetching meeting:', error.message);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+/**
  * @route PUT /meetings/:meetingId
- * @desc Update a specific meeting by ID
+ * @desc Update a specific meeting by its ID
  */
 router.put('/:meetingId', authenticate, async (req, res) => {
     try {
@@ -51,12 +71,17 @@ router.put('/:meetingId', authenticate, async (req, res) => {
 });
 
 /**
- * @route DELETE /meetings/:meetingId
- * @desc Delete a specific meeting by ID
+ * @route DELETE /meetings/:clubId/:meetingId
+ * @desc Delete a specific meeting by its ID for a specific club
  */
-router.delete('/:meetingId', authenticate, async (req, res) => {
+router.delete('/:clubId/:meetingId', authenticate, async (req, res) => {
     try {
-        const meeting = await deleteMeeting(req.params.meetingId);
+        const userId = req.user.userId;
+        const clubId = req.params['clubId'];
+        const meetingId = req.params['meetingId'];
+
+        const meeting = await deleteMeeting(clubId, meetingId, userId);
+
         return res.json({ message: "Meeting deleted successfully", meeting });
     } catch (error) {
         return res.status(404).json({ error: error.message });
