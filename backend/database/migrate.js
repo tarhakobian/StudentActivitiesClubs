@@ -59,7 +59,7 @@ const saveData = async () => {
                 console.log(`${user.name} , ${user.email} , ${association.role}`);
             }
         } catch
-            (error) {
+        (error) {
             console.log(error);
         }
 

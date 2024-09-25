@@ -1,15 +1,14 @@
 const Association = require("../../database/model/associationModel");
 const Club = require("../../database/model/clubModel");
 const User = require("../../database/model/userModel");
-// const { findUserById } = require('./userService');
-// const { findClubById } = require('./clubService');
+const { NotFoundError, UnauthorizedError } = require("../errors/errors");
 
 async function ensureOwnership(clubId, userId) {
     const user = await User.findById(userId).exec();
     const club = await Club.findById(clubId).exec();
 
     if (!user || !club) {
-        throw new Error('User or Club is not found')
+        throw new NotFoundError('User or Club is not found')
     }
 
     const association = await Association.findOne({
@@ -19,7 +18,7 @@ async function ensureOwnership(clubId, userId) {
 
 
     if (!association) {
-        throw new Error("Club ownership rejected")
+        throw new UnauthorizedError("Club ownership rejected")
     }
 
     return association.role;

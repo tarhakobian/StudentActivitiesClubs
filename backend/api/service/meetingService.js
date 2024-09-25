@@ -2,20 +2,21 @@ const Meeting = require('../../database/model/meetingModel');
 const User = require('../../database/model/userModel');
 const Club = require('../../database/model/clubModel');
 
-const { ensureOwnership } = require('./authService')
+const { ensureOwnership } = require('./authService');
+const { UnauthorizedError, BadRequestError, NotFoundError } = require('../errors/errors');
 
 // Create a new meeting
 async function createMeeting(clubId, userId, body) {
     const role = await ensureOwnership(clubId, userId)
 
     if (role === 'MEMBER') {
-        throw new Error("Unauthorized")
+        throw new UnauthorizedError("Unauthorized")
     }
 
     const { title, agenda, date, location, attachments } = body;
 
     if (!title || !agenda || !date || !location) {
-        throw new Error("All fields (title, agenda, date, location) must be provided and non-null.");
+        throw new BadRequestError("All fields (title, agenda, date, location) must be provided and non-null.");
     }
 
     const meeting = new Meeting({
@@ -49,6 +50,10 @@ async function getMeetingById(clubId, meetingId, userId) {
         isActive: true
     }).select('title agenda date location createdAt attachments participants').exec();
 
+    if (!meeting) {
+        throw new NotFoundError(`Meeting not found with the id - ${meetingId} `)
+    }
+
     return meeting;
 }
 
@@ -72,13 +77,13 @@ async function deleteMeeting(clubId, meetingId, userId) {
     const role = await ensureOwnership(clubId, userId);
 
     if (role === "Member") {
-        throw new Error("Unauthorized")
+        throw new UnauthorizedError("Unauthorized")
     }
 
     const meeting = await Meeting.findByIdAndDelete(meetingId).exec();
 
     if (!meeting) {
-        throw new Error(`Meeting with id ${meetingId} not found`);
+        throw new NotFoundError(`Meeting with id ${meetingId} not found`);
     }
 
     return meeting;
@@ -90,13 +95,13 @@ async function toggleMeetingActive(clubId, meetingId, userId) {
     const role = ensureOwnership(clubId, userId);
 
     if (role === 'Member') {
-        throw new Error("Unauthorized")
+        throw new UnauthorizedError("Unauthorized")
     }
 
     const meeting = await Meeting.findById(meetingId).exec();
 
     if (!meeting) {
-        throw new Error(`Meeting with id ${meetingId} not found`);
+        throw new NotFoundError(`Meeting with id ${meetingId} not found`);
     }
 
     meeting.isActive = !meeting.isActive;

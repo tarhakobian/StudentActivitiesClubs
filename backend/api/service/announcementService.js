@@ -1,12 +1,13 @@
-const Announcement = require('../../database/model/announcementModel')
-const {ensureOwnership} = require('./authService')
+const Announcement = require('../../database/model/announcementModel');
+const { CabinetMemberRequiredError, NotFoundError } = require('../errors/errors');
+const { ensureOwnership } = require('./authService')
 
 async function getAllAnnouncements(clubId, userId) {
     await ensureOwnership(clubId, userId)
 
-    const announcements = await Announcement.find({clubId: clubId, isActive: true})
+    const announcements = await Announcement.find({ clubId: clubId, isActive: true })
         .select('date title content attachments')
-        .sort({createdAt: -1});
+        .sort({ createdAt: -1 });
 
     return announcements.map(announcement => ({
         id: announcement._id,
@@ -20,7 +21,7 @@ async function getAllAnnouncements(clubId, userId) {
 async function createAnnouncement(announcementDetails) {
     const role = await ensureOwnership(announcementDetails['clubId'], announcementDetails['authorId'])
     if (role === 'Member') {
-        throw new Error("Unauthorized action")
+        throw new CabinetMemberRequiredError("Unauthorized action")
     }
 
     const announcement = await new Announcement(announcementDetails).save();
@@ -35,7 +36,7 @@ async function deleteAnnouncement(announcementId, userId) {
     const role = await ensureOwnership(clubId, userId)
 
     if (role === 'Member') {
-        throw new Error("Unauthorized")
+        throw new CabinetMemberRequiredError("Unauthorized")
     }
 
     await Announcement.deleteOne(announcement._id)
@@ -45,7 +46,7 @@ async function editAnnouncement(userId, announcementId, body) {
     const announcement = await Announcement.findById(announcementId).exec();
 
     if (!announcement) {
-        throw new Error("Announcement not found");
+        throw new NotFoundError("Announcement not found");
     }
 
     const clubId = announcement.clubId;
@@ -53,7 +54,7 @@ async function editAnnouncement(userId, announcementId, body) {
     const role = await ensureOwnership(clubId, userId);
 
     if (role === 'Member') {
-        throw new Error("Unauthorized");
+        throw new CabinetMemberRequiredError("Unauthorized");
     }
 
     announcement.title = body.title || announcement.title;
@@ -64,14 +65,14 @@ async function editAnnouncement(userId, announcementId, body) {
 
     await announcement.save();
 
-    return {message: "Announcement updated successfully", announcement};
+    return { message: "Announcement updated successfully", announcement };
 }
 
 async function announcementsChangeActiveStatus(announcementId, userId) {
     const announcement = await Announcement.findById(announcementId).exec();
 
     if (!announcement) {
-        throw new Error("Announcement not found");
+        throw new NotFoundError("Announcement not found");
     }
 
     const clubId = announcement.clubId;
@@ -79,7 +80,7 @@ async function announcementsChangeActiveStatus(announcementId, userId) {
     const role = await ensureOwnership(clubId, userId);
 
     if (role === 'Member') {
-        throw new Error("Unauthorized");
+        throw new CabinetMemberRequiredError("Unauthorized");
     }
 
     announcement.isActive = !announcement.isActive

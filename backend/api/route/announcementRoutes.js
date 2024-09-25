@@ -4,9 +4,10 @@ const {
     deleteAnnouncement,
     editAnnouncement,
     getAllAnnouncements,
-    announcementsChangeActiveStatus
+    announcementsChangeActiveStatus,
 } = require('../service/announcementService');
-const { authenticate } = require('../midldewear/securityMiddlewear');
+const { authenticate } = require('../middlewear/securityMiddlewear'); 
+const { MissingParametersError } = require('../errors/errors');
 
 const router = express.Router();
 
@@ -15,19 +16,23 @@ const router = express.Router();
  * @desc Get all announcements for a specific club
  */
 router.get('/announcements/:clubId', authenticate, async (req, res, next) => {
-    const userId = req.user.userId;
-    const clubId = req.params['clubId'];
+    try {
+        const userId = req.user.userId;
+        const clubId = req.params['clubId'];
 
-    const announcements = await getAllAnnouncements(clubId, userId);
+        const announcements = await getAllAnnouncements(clubId, userId);
 
-    res.status(200).json(announcements);
+        res.status(200).json(announcements);
+    } catch (err) {
+        next(err);
+    }
 });
 
 /**
  * @route POST /announcements/:clubId
  * @desc Create a new announcement for a specific club
  */
-router.post('/announcements/:clubId', authenticate, async (req, res) => {
+router.post('/announcements/:clubId', authenticate, async (req, res, next) => {
     try {
         const { title, content, attachments } = req.body;
 
@@ -35,7 +40,7 @@ router.post('/announcements/:clubId', authenticate, async (req, res) => {
         const clubId = req.params['clubId'];
 
         if (!title || !content || !clubId) {
-            return res.status(400).json({ message: 'Missing required fields' });
+            throw new MissingParametersError();
         }
 
         const announcementDetails = {
@@ -53,8 +58,7 @@ router.post('/announcements/:clubId', authenticate, async (req, res) => {
             announcement: announcementId,
         });
     } catch (err) {
-        console.error('Error creating announcement:', err);
-        res.status(500).json({ message: 'Internal server error' });
+        next(err);
     }
 });
 
@@ -67,23 +71,22 @@ router.delete('/announcements/:announcementId', authenticate, async (req, res, n
     const userId = req.user.userId;
 
     if (!announcementId) {
-        res.status(400).send('Missing announcementId');
+        return res.status(400).send('Missing announcementId');
     }
 
     try {
         await deleteAnnouncement(announcementId, userId);
+        res.status(204).send("Successfully deleted");
     } catch (error) {
-        res.status(500).send("Internal server error");
+        next(error);
     }
-
-    res.status(200).send("Successfully deleted");
 });
 
 /**
  * @route PUT /announcements/:announcementId
  * @desc Update a specific announcement by ID
  */
-router.put('/announcements/:announcementId', authenticate, async (req, res) => {
+router.put('/announcements/:announcementId', authenticate, async (req, res, next) => {
     const announcementId = req.params['announcementId'];
     const userId = req.user.userId;
     const body = req.body;
@@ -94,9 +97,9 @@ router.put('/announcements/:announcementId', authenticate, async (req, res) => {
         }
 
         const announcement = await editAnnouncement(userId, announcementId, body);
-        return res.status(200).json({ message: "Announcement updated successfully", announcement });
+        return res.status(200).json(announcement);
     } catch (error) {
-        return res.status(500).json({ error: `Error updating announcement: ${error.message}` });
+        next(error);
     }
 });
 
@@ -104,17 +107,16 @@ router.put('/announcements/:announcementId', authenticate, async (req, res) => {
  * @route PATCH /announcements/changeActiveStatus/:announcementId
  * @desc Change the active status of an announcement
  */
-router.patch('/announcements/changeActiveStatus/:announcementId', authenticate, async (req, res) => {
+router.patch('/announcements/changeActiveStatus/:announcementId', authenticate, async (req, res, next) => {
     const announcementId = req.params['announcementId'];
     const userId = req.user.userId;
 
     try {
         await announcementsChangeActiveStatus(announcementId, userId);
-    } catch (e) {
-        res.status(500).send(e.message);
+        res.status(200).json({ message: "Active status changed successfully" });
+    } catch (error) {
+        next(error);
     }
-
-    res.status(200);
 });
 
 module.exports = router;

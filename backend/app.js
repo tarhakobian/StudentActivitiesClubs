@@ -4,7 +4,7 @@ const clubRoutes = require('./api/route/clubsRoute');
 const userRoutes = require('./api/route/usersRoute');
 const meetingRoutes = require('./api/route/meetingRoutes');
 const announcementRoutes = require('./api/route/announcementRoutes');
-const { errorMiddlewear } = require('./api/midldewear/errorMiddlewear');
+const { errorMiddlewear } = require('./api/middlewear/errorMiddlewear');
 
 const app = express();
 

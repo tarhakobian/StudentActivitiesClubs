@@ -5,8 +5,10 @@ const {
     getClubMembers,
     joinClub,
     leaveClub,
+    searchClubs
 } = require('../service/clubService');
-const { authenticate } = require('../midldewear/securityMiddlewear');
+const { authenticate } = require('../middlewear/securityMiddlewear');
+const { BadRequestError } = require('../errors/errors');
 
 const router = express.Router();
 
@@ -38,6 +40,20 @@ router.get('/:clubId', async (req, res, next) => {
     }
 })
 
+router.get('/search/:regex', async (req, res, next) => {
+    try {
+        const regex = req.params['regex'];
+
+        if (!regex) {
+            throw new BadRequestError('Input required')
+        }
+
+        const clubs = await searchClubs(regex);
+        res.status(200).json(clubs);
+    } catch (err) {
+        next(err)
+    }
+})
 
 /**
  * @route GET /clubs/:clubId/members

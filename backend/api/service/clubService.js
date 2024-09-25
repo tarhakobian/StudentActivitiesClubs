@@ -3,7 +3,7 @@ const User = require('../../database/model/userModel');
 const Association = require('../../database/model/associationModel');
 const { findUserById } = require('./userService');
 const { ensureOwnership } = require('./authService');
-const { ValidationError, NotFoundError } = require('../errors/errors');
+const { ValidationError, NotFoundError, UnauthorizedError } = require('../errors/errors');
 
 async function findClubById(clubId) {
     const club = await Club.findById(clubId);
@@ -90,6 +90,12 @@ async function getClubMembers(clubId, userId) {
     });
 }
 
+async function searchClubs(regex) {
+    const clubs = await Club.find({ title: { $regex: regex, $options: 'i' } }).select(' title imageUrl').exec();
+
+    return clubs;
+}
+
 async function joinClub(clubId, userId) {
     await findClubById(clubId);
     const user = await findUserById(userId);
@@ -117,7 +123,7 @@ async function leaveClub(clubId, userId) {
     const role = await ensureOwnership(clubId, userId);
 
     if (role !== 'Member') {
-        throw new ValidationError('Only users with role Member can leave the club');
+        throw new UnauthorizedError('Only users with role Member can leave the club');
     }
 
     const association = await Association.findOneAndDelete({ clubId: clubId, userId: userId }).exec();
@@ -136,6 +142,7 @@ module.exports = {
     findClubById,
     getAllClubs,
     getClubById,
+    searchClubs,
     getClubMembers,
     joinClub,
     leaveClub,
