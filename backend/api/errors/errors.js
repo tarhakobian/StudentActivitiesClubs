@@ -20,7 +20,7 @@ class ValidationError extends AppError {
 
 class DuplicateUserError extends Error {
     constructor(message = "User with these credentials already exists") {
-        super(message, 400);
+        super(message, 409); //409 - Conflict
     }
 }
 
@@ -31,14 +31,14 @@ class PasswordValidationError extends Error {
 }
 
 class UnauthorizedError extends AppError {
-    constructor(message = "Unauthorized request") {
-        super(message, 401);
+    constructor(message = "Forbidden : Unauthorized request") {
+        super(message, 403);
     }
 }
 
 class CabinetMemberRequiredError extends AppError {
-    constructor(message = "You must be a cabinet member to perform this action") {
-        super(message, 403); // 403 Forbidden
+    constructor(message = "Forbidden : You must be a cabinet member to perform this action") {
+        super(message, 403);
     }
 }
 
@@ -53,6 +53,8 @@ class BadRequestError extends AppError {
         super(message, 400);
     }
 }
+
+
 
 module.exports = {
     ValidationError,

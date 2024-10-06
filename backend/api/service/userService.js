@@ -14,6 +14,10 @@ async function findUserById(userId) {
 }
 
 async function register(email, password, name) {
+    if (!email || !password || !name) {
+        throw new BadRequestError('Email, password, and name are required');
+    }
+
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -41,6 +45,10 @@ async function register(email, password, name) {
 }
 
 async function login(email, password) {
+    if (!email || !password) {
+        throw new BadRequestError('Email and password are required');
+    }
+
     const user = await User.findOne({ email });
     if (!user) {
         throw new NotFoundError(`User not found with this email - ${email}`)

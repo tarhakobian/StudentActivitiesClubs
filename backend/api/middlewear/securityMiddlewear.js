@@ -2,7 +2,8 @@ const jwt = require('jsonwebtoken');
 const Association = require("../../database/model/associationModel");
 
 const authenticate = (req, res, next) => {
-    const token = req.header('Authorization');
+    const authHeader = req.header('Authorization');
+    const token = authHeader && authHeader.split(' ')[1];  // This removes the 'Bearer' prefix
 
     if (!token) {
         return res.status(401).json({ message: 'Access denied. No token provided.' });
@@ -17,7 +18,5 @@ const authenticate = (req, res, next) => {
         res.status(400).json({ message: 'Invalid token' });
     }
 };
-
-
 
 module.exports = { authenticate };

@@ -12,8 +12,52 @@ const { MissingParametersError } = require('../errors/errors');
 const router = express.Router();
 
 /**
- * @route GET /announcements/:clubId
- * @desc Get all announcements for a specific club
+ * @swagger
+ *  paths:
+ *    /announcements/{clubId}:
+ *      get:
+ *        tags:
+ *          - Announcements
+ *        summary: Get all announcements for a specific club
+ *        description: This endpoint retrieves all announcements for a club the user is a member of.
+ *        security:
+ *          - bearerAuth: []
+ *        parameters:
+ *          - in: path
+ *            name: clubId
+ *            required: true
+ *            description: The unique identifier of the club
+ *            schema:
+ *              type: string
+ *        responses:
+ *          200:
+ *            description: A list of announcements for the club
+ *            content:
+ *              application/json:
+ *                schema:
+ *                  type: array
+ *                  items:
+ *                    type: object
+ *                    properties:
+ *                      announcementId:
+ *                        type: string
+ *                        description: The unique identifier of the announcement
+ *                      title:
+ *                        type: string
+ *                        description: The title of the announcement
+ *                      content:
+ *                        type: string
+ *                        description: The content of the announcement
+ *                      date:
+ *                        type: string
+ *                        format: date-time
+ *                        description: The date the announcement was made
+ *          401:
+ *            description: Unauthorized - The user is not authenticated
+ *          403:
+ *            description: Forbidden - The user does not have permission to view announcements for the specified club
+ *          500:
+ *            description: Internal server error
  */
 router.get('/announcements/:clubId', authenticate, async (req, res, next) => {
     try {
@@ -29,8 +73,63 @@ router.get('/announcements/:clubId', authenticate, async (req, res, next) => {
 });
 
 /**
- * @route POST /announcements/:clubId
- * @desc Create a new announcement for a specific club
+ * @swagger
+ *  paths:
+ *    /announcements/{clubId}:
+ *      post:
+ *        tags:
+ *          - Announcements
+ *        summary: Create a new announcement for a specific club
+ *        description: This endpoint allows authenticated users to create an announcement for a specific club. The user must provide the title, content, and optionally, attachments.
+ *        security:
+ *          - bearerAuth: []
+ *        parameters:
+ *          - in: path
+ *            name: clubId
+ *            required: true
+ *            description: The unique identifier of the club
+ *            schema:
+ *              type: string
+ *        requestBody:
+ *          required: true
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  title:
+ *                    type: string
+ *                    description: The title of the announcement
+ *                  content:
+ *                    type: string
+ *                    description: The body/content of the announcement
+ *                  attachments:
+ *                    type: array
+ *                    items:
+ *                      type: string
+ *                    description: Optional attachments related to the announcement
+ *        responses:
+ *          201:
+ *            description: Announcement created successfully
+ *            content:
+ *              application/json:
+ *                schema:
+ *                  type: object
+ *                  properties:
+ *                    message:
+ *                      type: string
+ *                      description: Success message
+ *                    announcement:
+ *                      type: string
+ *                      description: The unique identifier of the created announcement
+ *          400:
+ *            description: Bad request - Missing required parameters
+ *          401:
+ *            description: Unauthorized - The user is not authenticated
+ *          403:
+ *            description: Forbidden - The user is not authorized to create an announcement for this club
+ *          500:
+ *            description: Internal server error
  */
 router.post('/announcements/:clubId', authenticate, async (req, res, next) => {
     try {
@@ -63,8 +162,34 @@ router.post('/announcements/:clubId', authenticate, async (req, res, next) => {
 });
 
 /**
- * @route DELETE /announcements/:announcementId
- * @desc Delete a specific announcement by ID
+ * @swagger
+ *  paths:
+ *    /announcements/{announcementId}:
+ *      delete:
+ *        tags:
+ *          - Announcements
+ *        summary: Delete an announcement by its ID
+ *        description: This endpoint allows authenticated users to delete a specific announcement, given the announcement's unique ID.
+ *        security:
+ *          - bearerAuth: [] 
+ *        parameters:
+ *          - in: path
+ *            name: announcementId
+ *            required: true
+ *            description: The unique identifier of the announcement to delete
+ *            schema:
+ *              type: string
+ *        responses:
+ *          204:
+ *            description: Successfully deleted the announcement (No Content)
+ *          400:
+ *            description: Bad request - Missing announcementId
+ *          401:
+ *            description: Unauthorized - The user is not authenticated
+ *          403:
+ *            description: Forbidden - The user is not allowed to delete the announcement
+ *          500:
+ *            description: Internal server error
  */
 router.delete('/announcements/:announcementId', authenticate, async (req, res, next) => {
     const announcementId = req.params['announcementId'];
@@ -83,8 +208,71 @@ router.delete('/announcements/:announcementId', authenticate, async (req, res, n
 });
 
 /**
- * @route PUT /announcements/:announcementId
- * @desc Update a specific announcement by ID
+ * @swagger
+ *  paths:
+ *    /announcements/{announcementId}:
+ *      put:
+ *        tags:
+ *          - Announcements
+ *        summary: Update an announcement by its ID
+ *        description: This endpoint allows authenticated users to update the title, content, or attachments of an announcement by its ID.
+ *        security:
+ *          - bearerAuth: [] 
+ *        parameters:
+ *          - in: path
+ *            name: announcementId
+ *            required: true
+ *            description: The unique identifier of the announcement to update
+ *            schema:
+ *              type: string
+ *        requestBody:
+ *          required: true
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  title:
+ *                    type: string
+ *                    description: The title of the announcement
+ *                  content:
+ *                    type: string
+ *                    description: The body/content of the announcement
+ *                  attachments:
+ *                    type: array
+ *                    items:
+ *                      type: string
+ *                    description: Optional attachments related to the announcement
+ *        responses:
+ *          200:
+ *            description: Announcement updated successfully
+ *            content:
+ *              application/json:
+ *                schema:
+ *                  type: object
+ *                  properties:
+ *                    id:
+ *                      type: string
+ *                      description: The ID of the updated announcement
+ *                    title:
+ *                      type: string
+ *                      description: The title of the announcement
+ *                    content:
+ *                      type: string
+ *                      description: The body/content of the announcement
+ *                    attachments:
+ *                      type: array
+ *                      items:
+ *                        type: string
+ *                      description: Attachments associated with the announcement
+ *          400:
+ *            description: Bad request - No fields provided for update
+ *          401:
+ *            description: Unauthorized - The user is not authenticated
+ *          403:
+ *            description: Forbidden - The user is not authorized to update the announcement
+ *          500:
+ *            description: Internal server error
  */
 router.put('/announcements/:announcementId', authenticate, async (req, res, next) => {
     const announcementId = req.params['announcementId'];
@@ -104,8 +292,42 @@ router.put('/announcements/:announcementId', authenticate, async (req, res, next
 });
 
 /**
- * @route PATCH /announcements/changeActiveStatus/:announcementId
- * @desc Change the active status of an announcement
+ * @swagger
+ *  paths:
+ *    /announcements/changeActiveStatus/{announcementId}:
+ *      patch:
+ *        tags:
+ *          - Announcements
+ *        summary: Change the active status of an announcement
+ *        description: This endpoint allows authenticated users to change the active status of an announcement by its ID.
+ *        security:
+ *          - bearerAuth: [] 
+ *        parameters:
+ *          - in: path
+ *            name: announcementId
+ *            required: true
+ *            description: The unique identifier of the announcement
+ *            schema:
+ *              type: string
+ *        responses:
+ *          200:
+ *            description: Successfully changed the active status of the announcement
+ *            content:
+ *              application/json:
+ *                schema:
+ *                  type: object
+ *                  properties:
+ *                    message:
+ *                      type: string
+ *                      example: Active status changed successfully
+ *          400:
+ *            description: Bad request - Missing or invalid announcementId
+ *          401:
+ *            description: Unauthorized - The user is not authenticated
+ *          403:
+ *            description: Forbidden - The user is not authorized to change the active status
+ *          500:
+ *            description: Internal server error
  */
 router.patch('/announcements/changeActiveStatus/:announcementId', authenticate, async (req, res, next) => {
     const announcementId = req.params['announcementId'];

@@ -91,7 +91,7 @@ async function getClubMembers(clubId, userId) {
 }
 
 async function searchClubs(regex) {
-    const clubs = await Club.find({ title: { $regex: regex, $options: 'i' } }).select(' title imageUrl').exec();
+    const clubs = await Club.find({ title: { $regex: regex, $options: 'i' } }).select('_id title imageUrl').exec();
 
     return clubs;
 }
