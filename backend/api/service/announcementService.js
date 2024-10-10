@@ -19,9 +19,10 @@ async function getAllAnnouncements(clubId, userId) {
 }
 
 async function createAnnouncement(announcementDetails) {
+
     const role = await ensureOwnership(announcementDetails['clubId'], announcementDetails['authorId'])
 
-    // Not a cabinet member
+    // Not a cabinet member or ADMIN
     if (role === 'Member') {
         throw new CabinetMemberRequiredError("Unauthorized action")
     }

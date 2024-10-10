@@ -21,7 +21,12 @@ const userSchema = new Schema({
     associations: [{
         type: Schema.Types.ObjectId,
         ref: 'Association'
-    }]
+    }],
+    role: {
+        type: String,
+        required: true,
+        default: 'User'
+    }
 });
 
 const User = mongoose.model('User', userSchema);

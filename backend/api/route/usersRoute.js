@@ -177,6 +177,4 @@ router.get('/info/:userId', authenticate, async (req, res, next) => {
 });
 
 
-
-
 module.exports = router;

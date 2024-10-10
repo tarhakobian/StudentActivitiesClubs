@@ -24,7 +24,7 @@ async function register(email, password, name) {
         throw new DuplicateUserError(`Failed to register user with email - ${email}`)
     }
 
-    if (password.length < 6) {
+    if (password.length < 5) {
         throw new BadRequestError("Invalid password input")
     }
 
