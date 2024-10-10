@@ -11,8 +11,8 @@ async function ensureOwnership(clubId, userId) {
         throw new NotFoundError('User or Club is not found')
     }
 
-    if(user.role === "ADMIN"){
-        return "ADMIN"
+    if(user.role === "Admin"){
+        return "Admin"
     }
     
     const association = await Association.findOne({

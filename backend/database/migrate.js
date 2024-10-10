@@ -12,7 +12,8 @@ const saveData = async () => {
         name: 'admin',
         email: `admin`,
         password: password,
-        profileImageUrl: 'https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.istockphoto.com%2Fphotos%2Fuser-profile&psig=AOvVaw2fKyfXwYmS5ntFVgwcfcnX&ust=1725521939159000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCKjFyqXkqIgDFQAAAAAdAAAAABAE'
+        profileImageUrl: 'https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.istockphoto.com%2Fphotos%2Fuser-profile&psig=AOvVaw2fKyfXwYmS5ntFVgwcfcnX&ust=1725521939159000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCKjFyqXkqIgDFQAAAAAdAAAAABAE',
+        role : 'Admin'
     }).save()
 
     for (const dataEntry of data) {
