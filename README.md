@@ -48,7 +48,7 @@ docker-compose up -d
 
 This command will spin up a MongoDB container in detached mode (`-d`), running in the background.
 
-### 5. Stopping the Docker Container
+### 5. Stopping the Server
 
 When you need to stop the server, make sure to properly shut down the MongoDB container by running:
 

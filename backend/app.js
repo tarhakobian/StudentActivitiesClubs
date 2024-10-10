@@ -17,7 +17,7 @@ app.use('/clubs', clubRoutes);
 app.use('/club/announcements', announcementRoutes);
 app.use('/club/meetings', meetingRoutes);
 
-// TODO : add  authenticate middlewear
+// TODO : add authenticate middlewear
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, { explorer: true }));
 
 app.use(errorMiddlewear)

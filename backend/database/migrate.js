@@ -6,10 +6,12 @@ const Association = require("./model/associationModel");
 
 const saveData = async () => {
 
+    let password = await bcrypt.hash("admin", 10)
+
     await new User({
         name: 'admin',
         email: `admin`,
-        password: bcrypt.hash("admin", 10).toString(),
+        password: password,
         profileImageUrl: 'https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.istockphoto.com%2Fphotos%2Fuser-profile&psig=AOvVaw2fKyfXwYmS5ntFVgwcfcnX&ust=1725521939159000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCKjFyqXkqIgDFQAAAAAdAAAAABAE'
     }).save()
 
@@ -36,11 +38,12 @@ const saveData = async () => {
 
         try {
             for (const member of cabinet.keys()) {
+                let password =  await bcrypt.hash("123456", 10);
                 //Save the user
                 const user = await new User({
                     name: member.name,
                     email: `${member.name.replace(/\s+/g, "")}@student.glendale.edu`,
-                    password: bcrypt.hash("123456", 10).toString(),
+                    password: password,
                     profileImageUrl: 'https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.istockphoto.com%2Fphotos%2Fuser-profile&psig=AOvVaw2fKyfXwYmS5ntFVgwcfcnX&ust=1725521939159000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCKjFyqXkqIgDFQAAAAAdAAAAABAE'
                 }).save()
 
