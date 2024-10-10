@@ -14,7 +14,7 @@ app.use(express.json());
 
 app.use('/users', userRoutes);
 app.use('/clubs', clubRoutes);
-app.use('/clubs/announcements', announcementRoutes);
+app.use('/club/announcements', announcementRoutes);
 app.use('/club/meetings', meetingRoutes);
 
 // TODO : add  authenticate middlewear

@@ -14,7 +14,7 @@ const router = express.Router();
 /**
  * @swagger
  *  paths:
- *    /announcements/{clubId}:
+ *    /club/announcements/{clubId}:
  *      get:
  *        tags:
  *          - Announcements
@@ -39,19 +39,24 @@ const router = express.Router();
  *                  items:
  *                    type: object
  *                    properties:
- *                      announcementId:
+ *                      id:
  *                        type: string
  *                        description: The unique identifier of the announcement
+ *                      createdAt:
+ *                        type: string
+ *                        format: date-time
+ *                        description: The date the announcement was made
  *                      title:
  *                        type: string
  *                        description: The title of the announcement
  *                      content:
  *                        type: string
  *                        description: The content of the announcement
- *                      date:
- *                        type: string
- *                        format: date-time
- *                        description: The date the announcement was made
+ *                      attachments:
+ *                        type: array
+ *                        items:
+ *                          type: string
+ *                        description: An array of attachment URLs related to the announcement
  *          401:
  *            description: Unauthorized - The user is not authenticated
  *          403:
@@ -75,7 +80,7 @@ router.get('/announcements/:clubId', authenticate, async (req, res, next) => {
 /**
  * @swagger
  *  paths:
- *    /announcements/{clubId}:
+ *    /club/announcements/{clubId}:
  *      post:
  *        tags:
  *          - Announcements
@@ -164,7 +169,7 @@ router.post('/announcements/:clubId', authenticate, async (req, res, next) => {
 /**
  * @swagger
  *  paths:
- *    /announcements/{announcementId}:
+ *    /club/announcements/{announcementId}:
  *      delete:
  *        tags:
  *          - Announcements
@@ -210,7 +215,7 @@ router.delete('/announcements/:announcementId', authenticate, async (req, res, n
 /**
  * @swagger
  *  paths:
- *    /announcements/{announcementId}:
+ *    /club/announcements/{announcementId}:
  *      put:
  *        tags:
  *          - Announcements
@@ -294,7 +299,7 @@ router.put('/announcements/:announcementId', authenticate, async (req, res, next
 /**
  * @swagger
  *  paths:
- *    /announcements/changeActiveStatus/{announcementId}:
+ *    /club/announcements/changeActiveStatus/{announcementId}:
  *      patch:
  *        tags:
  *          - Announcements
