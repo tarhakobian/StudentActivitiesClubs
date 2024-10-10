@@ -113,6 +113,7 @@ router.get('/announcements/:clubId', authenticate, async (req, res, next) => {
  *                    items:
  *                      type: string
  *                    description: Optional attachments related to the announcement
+ * 
  *        responses:
  *          201:
  *            description: Announcement created successfully
