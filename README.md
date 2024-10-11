@@ -1,22 +1,22 @@
-
 # StudentActivitiesClubs Backend
 
-## Setup Instructions
+## Download Instructions
 
-### 1. Clone the Repository
-
-First, clone the repository to your local machine:
+Clone the repository to your local machine and change into the created directory:
 
 ```bash
 git clone <repository-url>
 cd StudentActivitiesClubs
 ```
 
-### 2. Install Dependencies
+## Backend Setup Instructions
 
-Navigate to the project directory and install the required dependencies:
+### 1. Install Dependencies
+
+Navigate to the backend directory and install the required dependencies:
 
 ```bash
+cd backend
 npm install
 ```
 
@@ -33,12 +33,6 @@ docker --version
 If Docker is not installed, you can download and install it from the official [Docker website](https://www.docker.com/products/docker-desktop).
 
 ### 4. Start MongoDB with Docker Compose
-
-Navigate to the backend directory:
-
-```bash
-cd backend
-```
 
 Run the following command to start MongoDB using Docker Compose:
 
@@ -91,3 +85,4 @@ This will open a Swagger UI where you can explore the available API endpoints.
 - Ensure that Docker is up and running before starting the server.
 - Always remember to shut down your MongoDB container when you're done by running `docker-compose down`.
 - Refer to the API documentation at `http://localhost:8080/api-docs` for detailed information on the available endpoints.
+
