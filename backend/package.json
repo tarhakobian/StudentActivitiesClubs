@@ -4,7 +4,7 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "docker compose up -d && nodemon server.js",
+    "start": "nodemon server.js",
     "mig": "node ./database/migrate.js",
     "downloadImages" : "node ./util/downloadImages.js"
   },

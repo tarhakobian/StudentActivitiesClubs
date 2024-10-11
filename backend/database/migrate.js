@@ -3,8 +3,26 @@ const Club = require('./model/clubModel');
 const User = require('./model/userModel');
 const bcrypt = require("bcrypt")
 const Association = require("./model/associationModel");
+const Meeting = require("./model/meetingModel");
 
 const saveData = async () => {
+
+    async function truncateColections() {
+        try {
+            await Promise.all([
+                User.collection.drop(),
+                Club.collection.drop(),
+                Association.collection.drop(),
+                Meeting.collection.drop()
+            ]);
+            console.warn('All collections dropped successfully ------ Ready for migrating data');
+
+        } catch (err) {
+            console.error('Error while dropping collections:', err);
+        }
+    }
+
+    await truncateColections()
 
     let password = await bcrypt.hash("admin", 10)
 
@@ -13,7 +31,7 @@ const saveData = async () => {
         email: `admin`,
         password: password,
         profileImageUrl: 'https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.istockphoto.com%2Fphotos%2Fuser-profile&psig=AOvVaw2fKyfXwYmS5ntFVgwcfcnX&ust=1725521939159000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCKjFyqXkqIgDFQAAAAAdAAAAABAE',
-        role : 'Admin'
+        role: 'Admin'
     }).save()
 
     for (const dataEntry of data) {
@@ -39,7 +57,7 @@ const saveData = async () => {
 
         try {
             for (const member of cabinet.keys()) {
-                let password =  await bcrypt.hash("123456", 10);
+                let password = await bcrypt.hash("123456", 10);
                 //Save the user
                 const user = await new User({
                     name: member.name,
