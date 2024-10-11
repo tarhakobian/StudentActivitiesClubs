@@ -6,6 +6,6 @@ mongoose.connect(process.env.MONGO_URL)
         console.log(`Database connection Failed --- ${reason}`)
         process.exit(-1);
     })
-
+    
 module.exports = mongoose
 

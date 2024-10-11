@@ -8,4 +8,29 @@ server.listen(port);
 
 console.log(`Server listening on port --- ${port}`)
 
-module.exports = {port, server}
+const { exec } = require('child_process');
+const util = require('util');
+const execPromise = util.promisify(exec);
+
+process.on('SIGINT', async () => {
+    try {
+        console.log('Shutting down server...');
+
+        // Await the completion of 'docker compose down'
+        const { stdout, stderr } = await execPromise('docker compose down');
+
+        if (stderr) {
+            console.warn(`${stderr}`);
+        }
+
+        console.log('Docker containers stopped.');
+        console.log(stdout);
+
+        process.exit();
+    } catch (e) {
+        console.error("Failed to run 'docker compose down':", e.message);
+        process.exit(1);
+    }
+});
+
+module.exports = { port, server }
