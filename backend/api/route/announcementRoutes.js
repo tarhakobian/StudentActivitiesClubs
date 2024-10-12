@@ -6,7 +6,7 @@ const {
     getAllAnnouncements,
     announcementsChangeActiveStatus,
 } = require('../service/announcementService');
-const { authenticate } = require('../middlewear/securityMiddlewear'); 
+const { authenticate } = require('../middlewear/securityMiddlewear');
 const { MissingParametersError } = require('../errors/errors');
 
 const router = express.Router();
@@ -113,7 +113,12 @@ router.get('/:clubId', authenticate, async (req, res, next) => {
  *                    items:
  *                      type: string
  *                    description: Optional attachments related to the announcement
- * 
+ *              example:
+ *                title: "Club Announcement 1"
+ *                content: "Content 1"
+ *                attachments:
+ *                  - "https://example.com/meeting-agenda.pdf"
+ *                  - "https://example.com/meeting-slides.pptx"
  *        responses:
  *          201:
  *            description: Announcement created successfully
@@ -187,7 +192,18 @@ router.post('/:clubId', authenticate, async (req, res, next) => {
  *              type: string
  *        responses:
  *          204:
- *            description: Successfully deleted the announcement (No Content)
+ *            description: Announcement deleted successfully
+ *            content:
+ *              application/json:
+ *                schema:
+ *                  type: object
+ *                  properties:
+ *                    message:
+ *                      type: string
+ *                      description: Success message
+ *                    announcement:
+ *                      type: string
+ *                      description: The unique identifier of the deleted announcement
  *          400:
  *            description: Bad request - Missing announcementId
  *          401:
@@ -207,7 +223,10 @@ router.delete('/:announcementId', authenticate, async (req, res, next) => {
 
     try {
         await deleteAnnouncement(announcementId, userId);
-        res.status(204).send("Successfully deleted");
+        res.status(204).json({
+            message: 'Announcement deleted successfully',
+            announcement: announcementId,
+        });
     } catch (error) {
         next(error);
     }
