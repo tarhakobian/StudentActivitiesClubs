@@ -10,7 +10,7 @@ const meetingSchema = new mongoose.Schema({
     isActive: {type: Boolean, default: true, required: true},
     authorId: {type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true},
     clubId: {type: mongoose.Schema.Types.ObjectId, ref: 'Club', required: true},
-    createdAt: {type: Date, required: true, default: Date.now()},
+    createdAt: {type: Date, required: true, default: Date.now},
     lastUpdatedAt: {type: Date},
     lastUpdatedBy: {type: mongoose.Schema.Types.ObjectId, ref: 'User'}
 });
