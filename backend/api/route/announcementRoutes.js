@@ -64,7 +64,7 @@ const router = express.Router();
  *          500:
  *            description: Internal server error
  */
-router.get('/announcements/:clubId', authenticate, async (req, res, next) => {
+router.get('/:clubId', authenticate, async (req, res, next) => {
     try {
         const userId = req.user.userId;
         const clubId = req.params['clubId'];
@@ -137,7 +137,7 @@ router.get('/announcements/:clubId', authenticate, async (req, res, next) => {
  *          500:
  *            description: Internal server error
  */
-router.post('/announcements/:clubId', authenticate, async (req, res, next) => {
+router.post('/:clubId', authenticate, async (req, res, next) => {
     try {
         const { title, content, attachments } = req.body;
 
@@ -197,7 +197,7 @@ router.post('/announcements/:clubId', authenticate, async (req, res, next) => {
  *          500:
  *            description: Internal server error
  */
-router.delete('/announcements/:announcementId', authenticate, async (req, res, next) => {
+router.delete('/:announcementId', authenticate, async (req, res, next) => {
     const announcementId = req.params['announcementId'];
     const userId = req.user.userId;
 
@@ -280,7 +280,7 @@ router.delete('/announcements/:announcementId', authenticate, async (req, res, n
  *          500:
  *            description: Internal server error
  */
-router.put('/announcements/:announcementId', authenticate, async (req, res, next) => {
+router.put('/:announcementId', authenticate, async (req, res, next) => {
     const announcementId = req.params['announcementId'];
     const userId = req.user.userId;
     const body = req.body;
@@ -335,7 +335,7 @@ router.put('/announcements/:announcementId', authenticate, async (req, res, next
  *          500:
  *            description: Internal server error
  */
-router.patch('/announcements/changeActiveStatus/:announcementId', authenticate, async (req, res, next) => {
+router.patch('/changeActiveStatus/:announcementId', authenticate, async (req, res, next) => {
     const announcementId = req.params['announcementId'];
     const userId = req.user.userId;
 
