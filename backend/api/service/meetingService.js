@@ -10,7 +10,7 @@ const { UnauthorizedError, BadRequestError, NotFoundError } = require('../errors
 async function createMeeting(clubId, userId, body) {
     const role = await ensureOwnership(clubId, userId)
 
-    if (role === 'MEMBER') {
+    if (role === 'Member') {
         throw new UnauthorizedError("Unauthorized")
     }
 
@@ -29,9 +29,9 @@ async function createMeeting(clubId, userId, body) {
     return meeting._id
 }
 
-// Join a meeting as a participant
-async function joinMeeting(clubId, meetingId, userId) {
-    await ensureOwnership(clubId, userId);  
+// RSVP a meeting as a participant
+async function rsvpMeeting(clubId, meetingId, userId) {
+    await ensureOwnership(clubId, userId);
 
     const meeting = await Meeting.findOne({
         _id: meetingId,
@@ -52,8 +52,6 @@ async function joinMeeting(clubId, meetingId, userId) {
     meeting.lastUpdatedBy = userId;
 
     await meeting.save();
-
-    return meeting.participants;
 }
 
 // Get all meetings for a club
@@ -142,21 +140,28 @@ async function deleteMeeting(clubId, meetingId, userId) {
 
 async function leaveMeeting(clubId, meetingId, userId) {
     const role = await ensureOwnership(clubId, userId);
-    if (!role) {
+    
+    if (role !== 'Member') {
         throw new UnauthorizedError("Unauthorized");
     }
 
-    const updatedMeeting = await Meeting.findByIdAndUpdate(
-        meetingId,
-        { $pull: { participants: userId } },
-        { new: true }
-    ).select('_id title participants');
+    const meeting = await Meeting.findById(meetingId).exec()
 
-    if (!updatedMeeting) {
+    if (!meeting) {
         throw new NotFoundError(`Meeting not found with id - ${meetingId}`);
     }
 
-    return updatedMeeting;
+    const isParticipant = meeting.participants.includes(userId);
+    
+    if (!isParticipant) {
+        throw new BadRequestError("User is not a participant in the meeting")
+    }
+
+    await Meeting.findByIdAndUpdate(
+        meetingId,
+        { $pull: { participants: userId } },
+        { new: true }
+    ).exec();
 }
 
 // Toggle meeting active status
@@ -182,7 +187,7 @@ async function toggleMeetingActive(clubId, meetingId, userId) {
 // Change active status of a meeting
 async function meetingsChangeActiveStatus(meetingId, userId) {
     const meeting = await Meeting.findById(meetingId).exec();
-    
+
     const clubId = meeting.clubId;
 
     const role = ensureOwnership(clubId, userId);
@@ -200,7 +205,7 @@ async function meetingsChangeActiveStatus(meetingId, userId) {
 
 module.exports = {
     createMeeting,
-    joinMeeting,
+    rsvpMeeting,
     getAllMeetings,
     getMeetingById,
     getAllParticipants,

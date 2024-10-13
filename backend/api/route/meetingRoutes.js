@@ -1,5 +1,5 @@
 const express = require('express');
-const { createMeeting, joinMeeting, deleteMeeting, leaveMeeting, getAllMeetings, getMeetingById, getAllParticipants, toggleMeetingActive, updateMeeting, meetingsChangeActiveStatus } = require('../service/meetingService');
+const { createMeeting, rsvpMeeting, deleteMeeting, leaveMeeting, getAllMeetings, getMeetingById, getAllParticipants, toggleMeetingActive, updateMeeting, meetingsChangeActiveStatus } = require('../service/meetingService');
 const { authenticate } = require('../middlewear/securityMiddlewear');
 
 const router = express.Router();
@@ -301,7 +301,7 @@ router.post('/:clubId', authenticate, async (req, res, next) => {
 /**
  * @swagger
  *  paths:
- *    /club/meetings/{clubId}/{meetingId}/participants:
+ *    /club/meetings/{clubId}/{meetingId}/rsvp:
  *      post:
  *        tags:
  *          - Meetings
@@ -354,9 +354,6 @@ router.post('/:clubId', authenticate, async (req, res, next) => {
  *                          id:
  *                            type: string
  *                            description: The ID of the participant.
- *                    participantsLength:
- *                      type: integer
- *                      description: The number of participants in the meeting.
  *          400:
  *            description: Bad Request - user is already a participant or invalid data.
  *          401:
@@ -366,16 +363,16 @@ router.post('/:clubId', authenticate, async (req, res, next) => {
  *          500:
  *            description: Internal server error.
  */
-router.post('/:clubId/:meetingId/participants', authenticate, async (req, res, next) => {
+router.post('/:clubId/:meetingId/rsvp', authenticate, async (req, res, next) => {
     try {
         const userId = req.user.userId;
         const { clubId, meetingId } = req.params; 
 
-        const meeting = await joinMeeting(clubId, meetingId, userId);
+        await rsvpMeeting(clubId, meetingId, userId);
 
         return res.status(200).json({
-            participants: meeting,
-            participantsLength: meeting.length
+            participants: meetingId,
+            message : "Sucessfully signed up to attend the meeting"
         });
     } catch (error) {
         next(error);
@@ -528,7 +525,7 @@ router.delete('/:clubId/:meetingId', authenticate, async (req, res, next) => {
 
         return res.status(204).json({ message: "Meeting deleted successfully", meeting });
     } catch (error) {
-        next
+        next(error)
     }
 });
 
@@ -587,13 +584,15 @@ router.delete('/:clubId/:meetingId', authenticate, async (req, res, next) => {
  *          500:
  *            description: Internal server error
  */
-router.delete('/:clubId/:meetingId/participants', authenticate, async (req, res, next) => {
+router.delete('/:clubId/:meetingId/rsvp', authenticate, async (req, res, next) => {
     try {
         const userId = req.user.userId;
         const { clubId, meetingId } = req.params;
 
         await leaveMeeting(clubId, meetingId, userId);
-        return res.status(200).json({ message: 'Successfully left the meeting.' });
+        return res.status(200).json({
+            meetingId : meetingId, 
+            message: 'Successfully left the meeting.' });
     } catch (error) {
         next(error);
     }
