@@ -602,7 +602,7 @@ router.delete('/:clubId/:meetingId/participants', authenticate, async (req, res,
 /**
  * @swagger
  *  paths:
- *    /club/meetings/{clubId}/{meetingId}/changeActiveStatus:
+ *    /club/meetings/{meetingId}/changeActiveStatus:
  *      patch:
  *        tags:
  *          - Meetings
@@ -611,12 +611,6 @@ router.delete('/:clubId/:meetingId/participants', authenticate, async (req, res,
  *        security:
  *          - bearerAuth: []
  *        parameters:
- *          - in: path
- *            name: clubId
- *            required: true
- *            description: The ID of the club whose meeting active status is to be changed.
- *            schema:
- *              type: string
  *          - in: path
  *            name: meetingId
  *            required: true
@@ -630,9 +624,6 @@ router.delete('/:clubId/:meetingId/participants', authenticate, async (req, res,
  *              schema:
  *                type: object
  *                properties:
- *                  clubId:
- *                    type: string
- *                    description: The ID of the club.
  *                  meetingId:
  *                      type: string
  *                      description: The Id of the meeting.
@@ -655,11 +646,11 @@ router.delete('/:clubId/:meetingId/participants', authenticate, async (req, res,
  *          500:
  *            description: Internal server error.
  */
-router.patch('/:clubId/:meetingId/changeActiveStatus', authenticate, async (req, res, next) => {
+router.patch('/:meetingId/changeActiveStatus', authenticate, async (req, res, next) => {
     try {
-        const { clubId, meetingId } = req.params;
+        const { meetingId } = req.params;
         const userId = req.user.userId;
-        await meetingsChangeActiveStatus(clubId, meetingId, userId);
+        await meetingsChangeActiveStatus(meetingId, userId);
         res.status(200).json({ message: "Active status changed successfully" });
     } catch (error) {
         next(error);

@@ -319,7 +319,7 @@ router.put('/:announcementId', authenticate, async (req, res, next) => {
 /**
  * @swagger
  *  paths:
- *    /club/announcements/changeActiveStatus/{announcementId}:
+ *    /club/announcements/{announcementId}/changeActiveStatus:
  *      patch:
  *        tags:
  *          - Announcements
@@ -354,7 +354,7 @@ router.put('/:announcementId', authenticate, async (req, res, next) => {
  *          500:
  *            description: Internal server error
  */
-router.patch('/changeActiveStatus/:announcementId', authenticate, async (req, res, next) => {
+router.patch('/:announcementId/changeActiveStatus', authenticate, async (req, res, next) => {
     const announcementId = req.params['announcementId'];
     const userId = req.user.userId;
 

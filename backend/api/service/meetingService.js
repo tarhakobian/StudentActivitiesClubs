@@ -180,14 +180,15 @@ async function toggleMeetingActive(clubId, meetingId, userId) {
 }
 
 // Change active status of a meeting
-async function meetingsChangeActiveStatus(clubId, meetingId, userId) {
-    const role = ensureOwnership(clubId, userId);
+async function meetingsChangeActiveStatus(meetingId, userId) {
+    const meeting = await Meeting.findById(meetingId).exec();
+    
+    const clubId = meeting.clubId;
 
+    const role = ensureOwnership(clubId, userId);
     if (role === 'Member') {
         throw new UnauthorizedError("Unauthorized")
     }
-
-    const meeting = await Meeting.findById(meetingId).exec();
 
     if (!meeting) {
         throw new NotFoundError(`Meeting with id ${meetingId} not found`);
