@@ -1,5 +1,5 @@
 const express = require('express');
-const { createMeeting, joinMeeting, deleteMeeting, leaveMeeting, getAllMeetings, getMeetingById, getAllParticipants, toggleMeetingActive, updateMeeting } = require('../service/meetingService');
+const { createMeeting, joinMeeting, deleteMeeting, leaveMeeting, getAllMeetings, getMeetingById, getAllParticipants, toggleMeetingActive, updateMeeting, meetingsChangeActiveStatus } = require('../service/meetingService');
 const { authenticate } = require('../middlewear/securityMiddlewear');
 
 const router = express.Router();
@@ -48,6 +48,16 @@ const router = express.Router();
  *                      description:
  *                        type: string
  *                        description: A brief description of the meeting.
+ *                    required:
+ *                      - clubId
+ *                    example:
+ *                      id: "string"
+ *                      title: "string"
+ *                      date: "string"
+ *                      location: "string"
+ *                      description: "string"
+ * 
+ *                      
  *          401:
  *            description: Unauthorized - invalid or missing authentication token.
  *          404:
@@ -312,6 +322,22 @@ router.post('/:clubId', authenticate, async (req, res, next) => {
  *            description: The ID of the meeting the user wants to join.
  *            schema:
  *              type: string
+ *        requestBody:
+ *          required: true
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  participantId:
+ *                    type: string
+ *                    description: The ID of the participant joining the meeting.
+ *                  meetingId:
+ *                    type: string
+ *                    description: The ID of the meeting.
+ *                example:
+ *                  participantId: "string"
+ *                  meetindId: "string"
  *        responses:
  *          200:
  *            description: Participant added to the meeting successfully.
@@ -328,12 +354,6 @@ router.post('/:clubId', authenticate, async (req, res, next) => {
  *                          id:
  *                            type: string
  *                            description: The ID of the participant.
- *                          name:
- *                            type: string
- *                            description: The name of the participant.
- *                          email:
- *                            type: string
- *                            description: The email of the participant.
  *                    participantsLength:
  *                      type: integer
  *                      description: The number of participants in the meeting.
@@ -467,15 +487,34 @@ router.put('/:meetingId', authenticate, async (req, res, next) => {
  *            description: The unique identifier of the meeting to be deleted.
  *            schema:
  *              type: string
+ *        requestBody:
+ *          required: true
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  clubId:
+ *                    type: string
+ *                    description: The Id of the club.
+ *                  meetingId:
+ *                      type: string
+ *                      description: The Id of the meeting.
  *        responses:
- *          204:
- *            description: Meeting deleted successfully.
- *          400:
- *            description: Bad request - Invalid input data.
+ *          200:
+ *            description: Successfully deleted the meeting.
+ *            content:
+ *              application/json:
+ *                schema:
+ *                  type: object
+ *                  properties:
+ *                    message:
+ *                      type: string
+ *                      example: "Successfully deleted the meeting."
  *          401:
- *            description: Unauthorized - The user is not authenticated.
+ *            description: Unauthorized - invalid or missing authentication token.
  *          404:
- *            description: Not Found - Meeting with the given ID does not exist or does not belong to the specified club.
+ *            description: Not Found - meeting not found.
  *          500:
  *            description: Internal server error
  */
@@ -517,6 +556,19 @@ router.delete('/:clubId/:meetingId', authenticate, async (req, res, next) => {
  *            description: The ID of the meeting.
  *            schema:
  *              type: string
+ *        requestBody:
+ *          required: true
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  clubId:
+ *                    type: string
+ *                    description: The ID of the club.
+ *                  meetingId:
+ *                      type: string
+ *                      description: The Id of the meeting.
  *        responses:
  *          200:
  *            description: Successfully left the meeting.
@@ -547,5 +599,71 @@ router.delete('/:clubId/:meetingId/participants', authenticate, async (req, res,
     }
 });
 
+/**
+ * @swagger
+ *  paths:
+ *    /club/meetings/{clubId}/{meetingId}/changeActiveStatus:
+ *      patch:
+ *        tags:
+ *          - Meetings
+ *        summary: Change active status of a meeting
+ *        description: This endpoint allows users to change the active status of a specific meeting. Only users with the appropriate permissions can change the status.
+ *        security:
+ *          - bearerAuth: []
+ *        parameters:
+ *          - in: path
+ *            name: clubId
+ *            required: true
+ *            description: The ID of the club whose meeting active status is to be changed.
+ *            schema:
+ *              type: string
+ *          - in: path
+ *            name: meetingId
+ *            required: true
+ *            description: The ID of the meeting whose active status is to be changed.
+ *            schema:
+ *              type: string
+ *        requestBody:
+ *          required: true
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  clubId:
+ *                    type: string
+ *                    description: The ID of the club.
+ *                  meetingId:
+ *                      type: string
+ *                      description: The Id of the meeting.
+ *        responses:
+ *          200:
+ *            description: Active status changed successfully.
+ *            content:
+ *              application/json:
+ *                schema:
+ *                  type: object
+ *                  properties:
+ *                    message:
+ *                      type: string
+ *                      description: Confirmation message indicating the status change.
+ *                      example: "Active status changed successfully"
+ *          401:
+ *            description: Unauthorized - the user does not have permission to change the status.
+ *          404:
+ *            description: Not Found - meeting with the specified ID not found.
+ *          500:
+ *            description: Internal server error.
+ */
+router.patch('/:clubId/:meetingId/changeActiveStatus', authenticate, async (req, res, next) => {
+    try {
+        const { clubId, meetingId } = req.params;
+        const userId = req.user.userId;
+        await meetingsChangeActiveStatus(clubId, meetingId, userId);
+        res.status(200).json({ message: "Active status changed successfully" });
+    } catch (error) {
+        next(error);
+    }
+});
 
 module.exports = router;

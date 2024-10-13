@@ -179,6 +179,24 @@ async function toggleMeetingActive(clubId, meetingId, userId) {
     return meeting;
 }
 
+// Change active status of a meeting
+async function meetingsChangeActiveStatus(clubId, meetingId, userId) {
+    const role = ensureOwnership(clubId, userId);
+
+    if (role === 'Member') {
+        throw new UnauthorizedError("Unauthorized")
+    }
+
+    const meeting = await Meeting.findById(meetingId).exec();
+
+    if (!meeting) {
+        throw new NotFoundError(`Meeting with id ${meetingId} not found`);
+    }
+
+    meeting.isActive = !meeting.isActive;
+    await meeting.save();
+}
+
 module.exports = {
     createMeeting,
     joinMeeting,
@@ -189,4 +207,5 @@ module.exports = {
     deleteMeeting,
     leaveMeeting,
     toggleMeetingActive,
+    meetingsChangeActiveStatus
 };
