@@ -1,5 +1,5 @@
 const express = require('express');
-const { createMeeting, deleteMeeting, getAllMeetings, getMeetingById, toggleMeetingActive, updateMeeting } = require('../service/meetingService');
+const { createMeeting, joinMeeting, deleteMeeting, leaveMeeting, getAllMeetings, getMeetingById, getAllParticipants, toggleMeetingActive, updateMeeting } = require('../service/meetingService');
 const { authenticate } = require('../middlewear/securityMiddlewear');
 
 const router = express.Router();
@@ -71,7 +71,7 @@ router.get('/:clubId', authenticate, async (req, res, next) => {
 /**
  * @swagger
  *  paths:
- *    /club/meetings/{clubId}/meetings/{meetingId}:
+ *    /club/meetings/{clubId}/{meetingId}:
  *      get:
  *        tags:
  *          - Meetings
@@ -135,10 +135,79 @@ router.get('/:clubId/:meetingId', authenticate, async (req, res, next) => {
     }
 });
 
+
 /**
  * @swagger
  *  paths:
- *    /club/{clubId}/meetings:
+ *    /club/meetings/{clubId}/{meetingId}/participants:
+ *      get:
+ *        tags:
+ *          - Meetings
+ *        summary: Retrieve a specific meeting's participants
+ *        description: This endpoint retrieves the participants of a specific meeting associated with a specific club ID and meeting ID.
+ *        security:
+ *          - bearerAuth: [] 
+ *        parameters:
+ *          - in: path
+ *            name: clubId
+ *            required: true
+ *            description: The ID of the club to which the meeting belongs.
+ *            schema:
+ *              type: string
+ *          - in: path
+ *            name: meetingId
+ *            required: true
+ *            description: The ID of the meeting to retrieve the participants of.
+ *            schema:
+ *              type: string
+ *        responses:
+ *          200:
+ *            description: Participants retrieved successfully.
+ *            content:
+ *              application/json:
+ *                schema:
+ *                  type: object
+ *                  properties:
+ *                    participants:
+ *                      type: string
+ *                      description: The unique identifier for the meeting.
+ *                    title:
+ *                      type: string
+ *                      description: The title of the meeting.
+ *                    date:
+ *                      type: string
+ *                      format: date-time
+ *                      description: The date and time of the meeting.
+ *                    location:
+ *                      type: string
+ *                      description: The location of the meeting.
+ *                    description:
+ *                      type: string
+ *                      description: A brief description of the meeting.
+ *          401:
+ *            description: Unauthorized - invalid or missing authentication token.
+ *          404:
+ *            description: Not Found - no meeting found for the specified club ID and meeting ID.
+ *          500:
+ *            description: Internal server error
+ */
+router.get('/:clubId/:meetingId/participants', authenticate, async (req, res, next) => {
+    const { clubId, meetingId } = req.params;
+    const userId = req.user.userId;
+
+    try {
+        const participants = await getAllParticipants(clubId, meetingId, userId);
+        console.log(participants)
+        return res.status(200).json(participants);
+    } catch (error) {
+        next(error)
+    }
+});
+
+/**
+ * @swagger
+ *  paths:
+ *    /club/meetings/{clubId}:
  *      post:
  *        tags:
  *          - Meetings
@@ -163,6 +232,9 @@ router.get('/:clubId/:meetingId', authenticate, async (req, res, next) => {
  *                  title:
  *                    type: string
  *                    description: The title of the meeting.
+ *                  agenda:
+ *                      type: string
+ *                      description: The agenda of the meeting.
  *                  date:
  *                    type: string
  *                    format: date-time
@@ -219,7 +291,82 @@ router.post('/:clubId', authenticate, async (req, res, next) => {
 /**
  * @swagger
  *  paths:
- *    /meetings/{meetingId}:
+ *    /club/meetings/{clubId}/{meetingId}/participants:
+ *      post:
+ *        tags:
+ *          - Meetings
+ *        summary: Join a meeting as a participant
+ *        description: This endpoint allows authenticated users to join a specific meeting by adding themselves as participants.
+ *        security:
+ *          - bearerAuth: []
+ *        parameters:
+ *          - in: path
+ *            name: clubId
+ *            required: true
+ *            description: The ID of the club associated with the meeting.
+ *            schema:
+ *              type: string
+ *          - in: path
+ *            name: meetingId
+ *            required: true
+ *            description: The ID of the meeting the user wants to join.
+ *            schema:
+ *              type: string
+ *        responses:
+ *          200:
+ *            description: Participant added to the meeting successfully.
+ *            content:
+ *              application/json:
+ *                schema:
+ *                  type: object
+ *                  properties:
+ *                    participants:
+ *                      type: array
+ *                      items:
+ *                        type: object
+ *                        properties:
+ *                          id:
+ *                            type: string
+ *                            description: The ID of the participant.
+ *                          name:
+ *                            type: string
+ *                            description: The name of the participant.
+ *                          email:
+ *                            type: string
+ *                            description: The email of the participant.
+ *                    participantsLength:
+ *                      type: integer
+ *                      description: The number of participants in the meeting.
+ *          400:
+ *            description: Bad Request - user is already a participant or invalid data.
+ *          401:
+ *            description: Unauthorized - invalid or missing authentication token.
+ *          404:
+ *            description: Not Found - club or meeting not found.
+ *          500:
+ *            description: Internal server error.
+ */
+router.post('/:clubId/:meetingId/participants', authenticate, async (req, res, next) => {
+    try {
+        const userId = req.user.userId;
+        const { clubId, meetingId } = req.params; 
+
+        const meeting = await joinMeeting(clubId, meetingId, userId);
+
+        return res.status(200).json({
+            participants: meeting,
+            participantsLength: meeting.length
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+
+/**
+ * @swagger
+ *  paths:
+ *    /club/meetings/{meetingId}:
  *      put:
  *        tags:
  *          - Meetings
@@ -299,7 +446,7 @@ router.put('/:meetingId', authenticate, async (req, res, next) => {
 /**
  * @swagger
  *  paths:
- *    /meetings/{clubId}/{meetingId}:
+ *    /club/meetings/{clubId}/{meetingId}:
  *      delete:
  *        tags:
  *          - Meetings
@@ -345,5 +492,60 @@ router.delete('/:clubId/:meetingId', authenticate, async (req, res, next) => {
         next
     }
 });
+
+/**
+ * @swagger
+ *  paths:
+ *    /club/meetings/{clubId}/{meetingId}/participants:
+ *      delete:
+ *        tags:
+ *          - Meetings
+ *        summary: Remove a user from a meeting's participants (leave a meeting)
+ *        description: This endpoint allows authenticated users to leave a meeting they are part of.
+ *        security:
+ *          - bearerAuth: []
+ *        parameters:
+ *          - in: path
+ *            name: clubId
+ *            required: true
+ *            description: The ID of the club.
+ *            schema:
+ *              type: string
+ *          - in: path
+ *            name: meetingId
+ *            required: true
+ *            description: The ID of the meeting.
+ *            schema:
+ *              type: string
+ *        responses:
+ *          200:
+ *            description: Successfully left the meeting.
+ *            content:
+ *              application/json:
+ *                schema:
+ *                  type: object
+ *                  properties:
+ *                    message:
+ *                      type: string
+ *                      example: "Successfully left the meeting."
+ *          401:
+ *            description: Unauthorized - invalid or missing authentication token.
+ *          404:
+ *            description: Not Found - meeting or participant not found.
+ *          500:
+ *            description: Internal server error
+ */
+router.delete('/:clubId/:meetingId/participants', authenticate, async (req, res, next) => {
+    try {
+        const userId = req.user.userId;
+        const { clubId, meetingId } = req.params;
+
+        await leaveMeeting(clubId, meetingId, userId);
+        return res.status(200).json({ message: 'Successfully left the meeting.' });
+    } catch (error) {
+        next(error);
+    }
+});
+
 
 module.exports = router;

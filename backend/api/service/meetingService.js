@@ -3,6 +3,7 @@ const User = require('../../database/model/userModel');
 const Club = require('../../database/model/clubModel');
 
 const { ensureOwnership } = require('./authService');
+const { findUserById } = require('./userService');
 const { UnauthorizedError, BadRequestError, NotFoundError } = require('../errors/errors');
 
 // Create a new meeting
@@ -28,6 +29,32 @@ async function createMeeting(clubId, userId, body) {
     return meeting._id
 }
 
+// Join a meeting as a participant
+async function joinMeeting(clubId, meetingId, userId) {
+    await ensureOwnership(clubId, userId);  
+
+    const meeting = await Meeting.findOne({
+        _id: meetingId,
+        clubId: clubId,
+        isActive: true
+    });
+
+    if (!meeting) {
+        throw new NotFoundError("Meeting not found");
+    }
+
+    if (meeting.participants.includes(userId)) {
+        throw new BadRequestError("User is already a participant in the meeting");
+    }
+
+    meeting.participants.push(userId);
+    meeting.lastUpdatedAt = new Date();
+    meeting.lastUpdatedBy = userId;
+
+    await meeting.save();
+
+    return meeting.participants;
+}
 
 // Get all meetings for a club
 async function getAllMeetings(clubId, userId) {
@@ -36,7 +63,7 @@ async function getAllMeetings(clubId, userId) {
     const meetings = await Meeting.find({
         clubId: clubId,
         isActive: true
-    }).select('title agenda date location attachments createdAt').sort({ date: 1 }).exec();
+    }).select('title agenda date location attachments createdAt').sort({ date: -1 }).exec();
 
     return meetings;
 }
@@ -56,6 +83,30 @@ async function getMeetingById(clubId, meetingId, userId) {
 
     return meeting;
 }
+
+// Get a meeting's participants
+async function getAllParticipants(clubId, meetingId, userId) {
+    await ensureOwnership(clubId, userId);
+
+    const meeting = await Meeting.findOne({
+        _id: meetingId,
+        isActive: true
+    }).select('participants').exec();
+
+    if (!meeting) {
+        throw new NotFoundError(`Meeting not found with the id - ${meetingId}`);
+    }
+
+    const participantsDetails = await Promise.all(
+        meeting.participants.map(async participantId => {
+            const user = await findUserById(participantId);
+            return { id: user._id, name: user.name };
+        })
+    );
+
+    return participantsDetails;
+}
+
 
 // Update a meeting
 async function updateMeeting(meetingId, updateDetails) {
@@ -89,6 +140,24 @@ async function deleteMeeting(clubId, meetingId, userId) {
     return meeting;
 }
 
+async function leaveMeeting(clubId, meetingId, userId) {
+    const role = await ensureOwnership(clubId, userId);
+    if (!role) {
+        throw new UnauthorizedError("Unauthorized");
+    }
+
+    const updatedMeeting = await Meeting.findByIdAndUpdate(
+        meetingId,
+        { $pull: { participants: userId } },
+        { new: true }
+    ).select('_id title participants');
+
+    if (!updatedMeeting) {
+        throw new NotFoundError(`Meeting not found with id - ${meetingId}`);
+    }
+
+    return updatedMeeting;
+}
 
 // Toggle meeting active status
 async function toggleMeetingActive(clubId, meetingId, userId) {
@@ -112,9 +181,12 @@ async function toggleMeetingActive(clubId, meetingId, userId) {
 
 module.exports = {
     createMeeting,
+    joinMeeting,
     getAllMeetings,
     getMeetingById,
+    getAllParticipants,
     updateMeeting,
     deleteMeeting,
+    leaveMeeting,
     toggleMeetingActive,
 };
