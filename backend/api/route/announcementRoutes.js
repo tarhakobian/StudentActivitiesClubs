@@ -74,54 +74,60 @@ router.get('/:clubId', authenticate, async (req, res, next) => {
     }
 });
 
-/**
- * @swagger
- * /announcement/{announcementId}:
- *   get:
- *     summary: Retrieve an announcement by its ID
- *     description: This endpoint retrieves the announcement details by its ID if the user is authenticated.
- *     tags: [Announcements]
- *     parameters:
- *       - in: path
- *         name: announcementId
- *         required: true
- *         description: The ID of the announcement to retrieve.
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Successfully retrieved the announcement
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *                   properties:
- *                      id:
- *                        type: string
- *                        description: The unique identifier of the announcement
- *                      createdAt:
- *                        type: string
- *                        format: date-time
- *                        description: The date the announcement was made
- *                      title:
- *                        type: string
- *                        description: The title of the announcement
- *                      content:
- *                        type: string
- *                        description: The content of the announcement
- *                      attachments:
- *                        type: array
- *                        items:
- *                          type: string
- *                          description: An array of attachment URLs related to the announcement
- *       404:
- *         description: Announcement not found
- *       401:
- *         description: Unauthorized access
- *       500:
- *         description: Internal server error
+/** 
+ * @swagger 
+ *  paths:
+ *   /club/announcement/{announcementId}:
+ *     get:
+ *       tags:
+ *         - Announcements
+ *       summary: Retrieve an announcement by ID
+ *       description: Gets the details of a specific announcement based on its ID.
+ *       parameters:
+ *         - name: announcementId
+ *           in: path
+ *           required: true
+ *           description: The unique identifier of the announcement to retrieve.
+ *           schema:
+ *             type: string
+ *       responses:
+ *         '200':
+ *           description: Successfully retrieved the announcement
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                     description: Unique identifier for the announcement
+ *                   createdAt:
+ *                     type: string
+ *                     format: date-time
+ *                     description: Timestamp indicating when the announcement was created (ISO 8601 format)
+ *                   title:
+ *                     type: string
+ *                     description: Title of the announcement
+ *                   content:
+ *                     type: string
+ *                     description: Main content of the announcement
+ *                   attachments:
+ *                     type: array
+ *                     items:
+ *                       type: object
+ *                       properties:
+ *                         filename:
+ *                           type: string
+ *                           description: Name of the file
+ *                         url:
+ *                           type: string
+ *                           description: URL of the attachment
+ *         '404':
+ *           description: Announcement not found
+ *         '401':
+ *           description: Unauthorized access
  */
-router.get('/announcementId', authenticate, async (req, res, next) => {
+router.get('/:announcementId', authenticate, async (req, res, next) => {
     try {
         const userId = req.user.userId;
         const announcementId = req.params['announcementId']
