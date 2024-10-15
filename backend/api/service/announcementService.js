@@ -1,7 +1,13 @@
 const Announcement = require('../../database/model/announcementModel');
+const Club = require('../../database/model/clubModel');
+const { findUserById } = require('./userService')
 const { CabinetMemberRequiredError, NotFoundError } = require('../errors/errors');
 const { ensureOwnership } = require('./authService')
 const { notifyAnnouncement } = require('./notificationService')
+const { mapAnnuncement } = require('./mapperService');
+const Association = require('../../database/model/associationModel');
+
+
 
 async function getAllAnnouncements(clubId, userId) {
     await ensureOwnership(clubId, userId)
@@ -10,13 +16,28 @@ async function getAllAnnouncements(clubId, userId) {
         .select('date title content attachments')
         .sort({ createdAt: -1 });
 
-    return announcements.map(announcement => ({
-        id: announcement._id,
-        createdAt: announcement.createdAt,
-        title: announcement.title,
-        content: announcement.content,
-        attachments: announcement.attachments
-    }));
+    return announcements.map(announcement => mapAnnuncement(announcement));
+}
+
+async function getAnnouncementById(userId, announcementId) {
+    let announcement = await Announcement.findById(announcementId).exec()
+
+    if (!announcement) {
+        throw new NotFoundError(`Announcement with id ${getAnnouncementById} is not found`)
+    }
+
+    const clubId = announcement.clubId
+
+    const role = await ensureOwnership(userId, clubId)
+
+    if (!announcement.isActive && role === "Member") {
+        throw new NotFoundError(`Announcement with id ${getAnnouncementById} is not found`)
+    }
+
+    //maps to DTO
+    announcement = mapAnnuncement(announcement)
+
+    return announcement
 }
 
 async function createAnnouncement(announcementDetails) {
@@ -29,12 +50,11 @@ async function createAnnouncement(announcementDetails) {
     }
 
     const announcement = await new Announcement(announcementDetails).save();
-    
-    notifyAnnouncement(announcementDetails)
+
+    notifyAnnouncement(announcement._id, announcementDetails)
 
     return announcement._id;
 }
-
 
 async function deleteAnnouncement(announcementId, userId) {
     const announcement = await Announcement.findById(announcementId).exec()
@@ -94,10 +114,12 @@ async function announcementsChangeActiveStatus(announcementId, userId) {
     await announcement.save();
 }
 
+
 module.exports = {
     createAnnouncement,
     deleteAnnouncement,
     editAnnouncement,
     getAllAnnouncements,
+    getAnnouncementById,
     announcementsChangeActiveStatus
 }
