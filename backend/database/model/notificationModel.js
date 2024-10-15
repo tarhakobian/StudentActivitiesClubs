@@ -4,7 +4,6 @@ const notificationSchema = new mongoose.Schema({
     recipient: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     sender: { type: Schema.Types.ObjectId, ref: 'Club' },
     message: { type: String, required: true },
-    entity: { type: Schema.Types.ObjectId, refPath: 'entityType' },
     entityType: {
         type: String,
         enum: ['Announcement', 'Meeting', 'ContactRequest'],

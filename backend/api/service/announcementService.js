@@ -1,6 +1,7 @@
 const Announcement = require('../../database/model/announcementModel');
 const { CabinetMemberRequiredError, NotFoundError } = require('../errors/errors');
 const { ensureOwnership } = require('./authService')
+const { notifyAnnouncement } = require('./notificationService')
 
 async function getAllAnnouncements(clubId, userId) {
     await ensureOwnership(clubId, userId)
@@ -22,12 +23,14 @@ async function createAnnouncement(announcementDetails) {
 
     const role = await ensureOwnership(announcementDetails['clubId'], announcementDetails['authorId'])
 
-    // Not a cabinet member or ADMIN
+    // Not a cabinet member or Admin
     if (role === 'Member') {
         throw new CabinetMemberRequiredError("Unauthorized action")
     }
 
     const announcement = await new Announcement(announcementDetails).save();
+    
+    notifyAnnouncement(announcementDetails)
 
     return announcement._id;
 }
