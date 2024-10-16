@@ -1,15 +1,12 @@
 const express = require('express');
-const {
-    createAnnouncement,
-    deleteAnnouncement,
-    editAnnouncement,
-    getAllAnnouncements,
-    announcementsChangeActiveStatus,
-} = require('../service/announcementService');
+const announcementService = require('../service/announcementService');
 const { authenticate } = require('../middlewear/securityMiddlewear');
 const { MissingParametersError } = require('../errors/errors');
 
 const router = express.Router();
+
+//TODO:  Make a route for club's cabinet to access announcement that are not active but hasn't been deleted yet.
+
 
 /**
  * @swagger
@@ -69,13 +66,79 @@ router.get('/:clubId', authenticate, async (req, res, next) => {
         const userId = req.user.userId;
         const clubId = req.params['clubId'];
 
-        const announcements = await getAllAnnouncements(clubId, userId);
+        const announcements = await announcementService.getAllAnnouncements(clubId, userId);
 
         res.status(200).json(announcements);
     } catch (err) {
         next(err);
     }
 });
+
+/** 
+ * @swagger 
+ *  paths:
+ *   /club/announcement/{announcementId}:
+ *     get:
+ *       tags:
+ *         - Announcements
+ *       summary: Retrieve an announcement by ID
+ *       description: Gets the details of a specific announcement based on its ID.
+ *       parameters:
+ *         - name: announcementId
+ *           in: path
+ *           required: true
+ *           description: The unique identifier of the announcement to retrieve.
+ *           schema:
+ *             type: string
+ *       responses:
+ *         '200':
+ *           description: Successfully retrieved the announcement
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                     description: Unique identifier for the announcement
+ *                   createdAt:
+ *                     type: string
+ *                     format: date-time
+ *                     description: Timestamp indicating when the announcement was created (ISO 8601 format)
+ *                   title:
+ *                     type: string
+ *                     description: Title of the announcement
+ *                   content:
+ *                     type: string
+ *                     description: Main content of the announcement
+ *                   attachments:
+ *                     type: array
+ *                     items:
+ *                       type: object
+ *                       properties:
+ *                         filename:
+ *                           type: string
+ *                           description: Name of the file
+ *                         url:
+ *                           type: string
+ *                           description: URL of the attachment
+ *         '404':
+ *           description: Announcement not found
+ *         '401':
+ *           description: Unauthorized access
+ */
+router.get('/:announcementId', authenticate, async (req, res, next) => {
+    try {
+        const userId = req.user.userId;
+        const announcementId = req.params['announcementId']
+
+        const announcement = await announcementService.getAnnouncementById(userId, announcementId)
+
+        res.status(200).json(announcement)
+    } catch (error) {
+        next(error)
+    }
+})
 
 /**
  * @swagger
@@ -161,7 +224,7 @@ router.post('/:clubId', authenticate, async (req, res, next) => {
             attachments: attachments || [],
         };
 
-        const announcementId = await createAnnouncement(announcementDetails);
+        const announcementId = await announcementService.createAnnouncement(announcementDetails);
 
         res.status(201).json({
             message: 'Announcement created successfully',
@@ -222,7 +285,7 @@ router.delete('/:announcementId', authenticate, async (req, res, next) => {
     }
 
     try {
-        await deleteAnnouncement(announcementId, userId);
+        await announcementService.deleteAnnouncement(announcementId, userId);
         res.status(204).json({
             message: 'Announcement deleted successfully',
             announcement: announcementId,
@@ -309,7 +372,7 @@ router.put('/:announcementId', authenticate, async (req, res, next) => {
             return res.status(400).json({ error: "No fields to update" });
         }
 
-        const announcement = await editAnnouncement(userId, announcementId, body);
+        const announcement = await announcementService.editAnnouncement(userId, announcementId, body);
         return res.status(200).json(announcement);
     } catch (error) {
         next(error);
@@ -359,7 +422,7 @@ router.patch('/:announcementId/changeActiveStatus', authenticate, async (req, re
     const userId = req.user.userId;
 
     try {
-        await announcementsChangeActiveStatus(announcementId, userId);
+        await announcementService.announcementsChangeActiveStatus(announcementId, userId);
         res.status(200).json({ message: "Active status changed successfully" });
     } catch (error) {
         next(error);
