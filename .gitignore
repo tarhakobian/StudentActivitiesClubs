@@ -1,6 +1,6 @@
 backend/node_modules
 backend/.idea
 backend/.DS_Store
-./.DS_Store
+.DS_Store
 frontend/react/node_modules
 .idea/
