@@ -9,6 +9,7 @@ const Association = require('../../database/model/associationModel');
 
 
 
+
 async function getAllAnnouncements(clubId, userId) {
     await ensureOwnership(clubId, userId)
 
