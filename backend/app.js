@@ -4,10 +4,12 @@ const clubRoutes = require('./api/route/clubsRoute');
 const userRoutes = require('./api/route/usersRoute');
 const meetingRoutes = require('./api/route/meetingRoutes');
 const announcementRoutes = require('./api/route/announcementRoutes');
+const uploadRoute = require('./api/route/uploadRoute');
+const notificationRoutes = require('./api/route/notificationRoutes')
 const swaggerSpec = require('./config/swaggerConfig');
 const swaggerUi = require('swagger-ui-express');
 const { errorMiddlewear } = require('./api/middlewear/errorMiddlewear');
-const uploadRoute = require('./api/route/uploadRoute');
+
 
 const app = express();
 
@@ -17,6 +19,7 @@ app.use('/users', userRoutes);
 app.use('/clubs', clubRoutes);
 app.use('/club/announcements', announcementRoutes);
 app.use('/club/meetings', meetingRoutes);
+app.use('/notifications', notificationRoutes);
 app.use('/upload', uploadRoute);
 
 // TODO : add authenticate middlewear

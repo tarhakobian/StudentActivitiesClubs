@@ -3,6 +3,7 @@ const Announcement = require('../../database/model/announcementModel')
 const Association = require('../../database/model/associationModel')
 const Club = require('../../database/model/clubModel')
 const Notification = require('../../database/model/notificationModel')
+const { NotFoundError, AppError } = require('../errors/errors')
 
 
 async function notifyAnnouncement(announcementId, announcementDetails) {
@@ -29,4 +30,56 @@ async function notifyAnnouncement(announcementId, announcementDetails) {
     await Promise.all(notificationPromises);
 }
 
-module.exports = { notifyAnnouncement }
+const getNotificationsForUser = async (userId) => {
+    try {
+        let notifications = await Notification.find({ recipient: userId }).sort({ isRead: 1, createdAt: -1 });
+
+        if (!notifications) {
+            throw new NotFoundError()
+        }
+
+        const clubTitle = await Club.findById(notifications.sender).select('title').exec();
+
+        if (!clubTitle) {
+            throw new NotFoundError()
+        }
+
+        notifications = notifications.map(n => ({
+            ...n._doc,
+            sender: clubTitle
+        }));
+
+        return notifications;
+    } catch (error) {
+        throw new AppError("Something went wrong")
+    }
+};
+
+const getNotificationById = async (notificationId, userId) => {
+    try {
+        const notification = await Notification.findOneAndUpdate(
+            { _id: notificationId, recipient: userId },
+            { $set: { isRead: true } },
+            { new: true }
+        );
+
+        if (!notification) {
+            throw new NotFoundError()
+        }
+
+        const clubTitle = await Club.findById(notification.sender).select('title').exec();
+
+        if (!clubTitle) {
+            throw new NotFoundError()
+        }
+
+        notification.sender = clubTitle
+
+        return notification;
+    } catch (error) {
+        throw new NotFoundError()
+    }
+};
+
+
+module.exports = { notifyAnnouncement, getNotificationsForUser, getNotificationById }
