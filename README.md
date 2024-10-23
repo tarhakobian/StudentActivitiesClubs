@@ -1,14 +1,5 @@
 # StudentActivitiesClubs Backend
 
-## Download Instructions
-
-Clone the repository to your local machine and change into the created directory:
-
-```bash
-git clone <repository-url>
-cd StudentActivitiesClubs
-```
-
 ## Backend Setup Instructions
 
 ### 1. Install Dependencies
