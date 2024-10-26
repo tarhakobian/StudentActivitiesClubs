@@ -97,7 +97,7 @@ async function searchClubs(regex) {
 }
 
 async function joinClub(clubId, userId) {
-    await findClubById(clubId);
+    const club = await findClubById(clubId);
     const user = await findUserById(userId);
 
     const duplicateAssociation = await Association.findOne({
@@ -107,6 +107,11 @@ async function joinClub(clubId, userId) {
 
     if (duplicateAssociation) {
         throw new ValidationError("User is already a member of this club");
+    }
+
+    if (club.application && club.application.questions.length > 0) {
+        // Return the application to the client
+        return club.application.questions;
     }
 
     const association = await new Association({
@@ -138,6 +143,35 @@ async function leaveClub(clubId, userId) {
     await user.save();
 }
 
+async function submitApplication(clubId, userId, answers) {
+    const club = await findClubById(clubId);
+    const user = await findUserById(userId);
+
+    if (!club.application || club.application.questions.length === 0) {
+        throw new ValidationError("This club does not have an application to submit.");
+    }
+
+    const duplicateAssociation = await Association.findOne({
+        clubId: clubId,
+        userId: userId
+    }).exec();
+
+    if (duplicateAssociation) {
+        throw new ValidationError("User is already a member of this club");
+    }
+
+    const association = new Association({
+        clubId: clubId,
+        userId: userId,
+        role: "Member"
+    });
+    await association.save();
+
+    user.associations.push(association);
+    await user.save();
+}
+
+
 module.exports = {
     findClubById,
     getAllClubs,
@@ -146,4 +180,5 @@ module.exports = {
     getClubMembers,
     joinClub,
     leaveClub,
+    submitApplication
 };

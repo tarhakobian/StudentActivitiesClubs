@@ -1,12 +1,5 @@
 const express = require('express');
-const {
-    getAllClubs,
-    getClubById,
-    getClubMembers,
-    joinClub,
-    leaveClub,
-    searchClubs
-} = require('../service/clubService');
+const clubService = require('../service/clubService');
 const { authenticate } = require('../middlewear/securityMiddlewear');
 const { BadRequestError } = require('../errors/errors');
 
@@ -45,7 +38,7 @@ const router = express.Router();
  */
 router.get("/", async (req, res, next) => {
     try {
-        const clubs = await getAllClubs();
+        const clubs = await clubService.getAllClubs();
         res.status(200).json(clubs);
     } catch (error) {
         next(error);
@@ -113,7 +106,7 @@ router.get('/:clubId', async (req, res, next) => {
     const clubId = req.params['clubId'];
 
     try {
-        const club = await getClubById(clubId);
+        const club = await clubService.getClubById(clubId);
         res.status(200).json(club);
     } catch (error) {
         next(error);
@@ -168,7 +161,7 @@ router.get('/search/:regex', async (req, res, next) => {
             throw new BadRequestError('Input required')
         }
 
-        const clubs = await searchClubs(regex);
+        const clubs = await clubService.searchClubs(regex);
         res.status(200).json(clubs);
     } catch (err) {
         next(err)
@@ -214,7 +207,7 @@ router.get("/:clubId/members", authenticate, async (req, res, next) => {
     const clubId = req.params['clubId'];
 
     try {
-        const clubMembers = await getClubMembers(clubId, req.user.userId);
+        const clubMembers = await clubService.getClubMembers(clubId, req.user.userId);
         res.status(200).json(clubMembers);
     } catch (error) {
         next(error);
@@ -257,7 +250,7 @@ router.post("/:clubId/join", authenticate, async (req, res, next) => {
         const clubId = req.params['clubId'];
         const userId = req.user.userId;
 
-        await joinClub(clubId, userId);
+        await clubService.joinClub(clubId, userId);
         res.status(200).send(clubId);
     } catch (error) {
         next(error);
@@ -300,8 +293,22 @@ router.delete("/:clubId/leave", authenticate, async (req, res, next) => {
         const clubId = req.params['clubId'];
         const userId = req.user.userId;
 
-        await leaveClub(clubId, userId);
+        await clubService.leaveClub(clubId, userId);
         res.status(200).send(clubId);
+    } catch (error) {
+        next(error);
+    }
+});
+
+router.post("/:clubId/submitApplication", authenticate, async (req, res, next) => {
+    try {
+        const clubId = req.params['clubId'];
+        const userId = req.user.userId;
+        const { answers } = req.body; // Expecting answers to be submitted
+
+        await clubService.submitApplication(clubId, userId, answers);
+
+        res.status(200).send({ message: 'Successfully joined the club' });
     } catch (error) {
         next(error);
     }

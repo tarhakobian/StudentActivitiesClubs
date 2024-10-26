@@ -1,6 +1,19 @@
 const mongoose = require('../../config/databaseConfig');
 
 const Schema = mongoose.Schema;
+
+const questionSchema = new Schema({
+    questionText: {
+        type: String,
+        required: true,
+    },
+    inputType: {
+        type: String, // "text", "single-choice", "multiple-choice"
+        required: true,
+    },
+    choices: [String], // If it's a choice-based question, store possible choices here
+});
+
 const clubSchema = new Schema({
     title: {
         type: String,
@@ -21,6 +34,9 @@ const clubSchema = new Schema({
     ],
     imageUrl: {
         type: String,
+    },
+    application: {
+        questions: [questionSchema],
     },
 });
 
