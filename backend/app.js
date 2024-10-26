@@ -5,7 +5,8 @@ const userRoutes = require('./api/route/usersRoute');
 const meetingRoutes = require('./api/route/meetingRoutes');
 const announcementRoutes = require('./api/route/announcementRoutes');
 const uploadRoute = require('./api/route/uploadRoute');
-const notificationRoutes = require('./api/route/notificationRoutes')
+const notificationRoutes = require('./api/route/notificationRoutes');
+const openaiRoutes = require('./api/route/openAiRoutes')
 const swaggerSpec = require('./config/swaggerConfig');
 const swaggerUi = require('swagger-ui-express');
 const { errorMiddlewear } = require('./api/middlewear/errorMiddlewear');
@@ -21,6 +22,7 @@ app.use('/club/announcements', announcementRoutes);
 app.use('/club/meetings', meetingRoutes);
 app.use('/notifications', notificationRoutes);
 app.use('/upload', uploadRoute);
+app.use('/openai', openaiRoutes)
 
 // TODO : add authenticate middlewear
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, { explorer: true }));

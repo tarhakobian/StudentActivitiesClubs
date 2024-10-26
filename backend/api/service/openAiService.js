@@ -1,6 +1,5 @@
 /** Author: Andre Matevosyan */
-const openai = require('../../openAiConfigonfig/')
-
+const openai = require('../../config/openAiConfig')
 
 async function moderateChat(message) {
   const userMessage = message;
@@ -22,4 +21,4 @@ async function moderateChat(message) {
   }
 }
 
-module.exports = moderateChat;
+module.exports = {moderateChat}

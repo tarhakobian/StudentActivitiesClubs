@@ -1,6 +1,6 @@
 const mongoose = require('../../config/databaseConfig');
-
 const Schema = mongoose.Schema;
+
 const associationSchema = new Schema({
     userId: {
         type: Schema.Types.ObjectId,
