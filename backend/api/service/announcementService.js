@@ -3,7 +3,7 @@ const Club = require('../../database/model/clubModel');
 const { findUserById } = require('./userService')
 const { CabinetMemberRequiredError, NotFoundError } = require('../errors/errors');
 const { ensureOwnership } = require('./authService')
-const { notifyAnnouncement } = require('./notificationService')
+const { notify } = require('./notificationService')
 const { mapAnnuncement } = require('./mapperService');
 const Association = require('../../database/model/associationModel');
 
@@ -50,7 +50,7 @@ async function createAnnouncement(announcementDetails) {
 
     const announcement = await new Announcement(announcementDetails).save();
 
-    notifyAnnouncement(announcement._id, announcementDetails)
+    notify(announcement._id, announcementDetails, "Announcement")
 
     return announcement._id;
 }

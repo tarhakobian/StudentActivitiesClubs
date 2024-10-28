@@ -1,7 +1,7 @@
 const Meeting = require('../../database/model/meetingModel');
 const User = require('../../database/model/userModel');
 const Club = require('../../database/model/clubModel');
-
+const { notify } = require('./notificationService')
 const { ensureOwnership } = require('./authService');
 const { findUserById } = require('./userService');
 const { UnauthorizedError, BadRequestError, NotFoundError } = require('../errors/errors');
@@ -25,6 +25,8 @@ async function createMeeting(clubId, userId, body) {
     });
 
     await meeting.save();
+
+    notify(meeting._id, meeting, "Meeting")
 
     return meeting._id
 }
