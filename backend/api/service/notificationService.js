@@ -20,7 +20,7 @@ async function notifyAnnouncement(announcementId, announcementDetails) {
         const notification = new Notification({
             recipient: a.userId,
             sender: club._id,
-            message: `📢 New Announcement from ${club.title}! \n\n ${content.slice(0, 30)}...\n\n Don't miss out—click to view the full details!\n\n ${BASE_URL}/club/announcements/${announcementId} `,
+            message: `📢 New Announcement from ${club.title}! \n\n ${content.slice(0, 30)}...\n\n Don't miss out—click to view the full details!\n\n ${BASE_URL}club/announcements/${announcementId} `,
             entityType: 'Announcement'
         });
 
