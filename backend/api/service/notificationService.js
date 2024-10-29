@@ -5,7 +5,9 @@ const Club = require('../../database/model/clubModel')
 const User = require("../../database/model/userModel");
 const Notification = require('../../database/model/notificationModel')
 const { NotFoundError, AppError } = require('../errors/errors')
-
+const clubService = require('../service/clubService');
+const userService = require('../service/userService');
+const meetingService = require('../service/meetingService');
 
 const notificationMessages = {
     Announcement: (club, message, entityId) =>
@@ -90,23 +92,19 @@ const getNotificationById = async (notificationId, userId) => {
     });
 
     if (!notification) {
-        throw new NotFoundError(`Notification not found OR is scheduled for deletion for ID: ${notificationId} and user: ${userId}`);
+        throw new NotFoundError(`Notification not found for ID: ${notificationId} and user: ${userId}`);
     }
 
     const senderId = notification.sender;
     let senderTitle;
 
     if (notification.entityType === 'Announcement' || notification.entityType === 'Meeting') {
-        const club = await Club.findById(senderId).select('title').exec();
-        if (!club) {
-            throw new NotFoundError(`Club not found for sender ID: ${senderId}`);
-        }
+        // If notification is announcement or meeting, the sender will be a club
+        const club = await clubService.findClubById(senderId)
         senderTitle = club.title;
     } else if (notification.entityType === 'ContactRequest') {
-        const user = await User.findById(senderId).select('name').exec();
-        if (!user) {
-            throw new NotFoundError(`User not found for sender ID: ${senderId}`);
-        }
+        // If notificaiton is contact request, sender is user
+        const user = await userService.findUserById(senderId)
         senderTitle = user.name;
     } else {
         throw new AppError("Invalid entity type");
