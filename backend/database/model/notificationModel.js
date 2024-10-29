@@ -2,8 +2,8 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const notificationSchema = new Schema({
-    recipient: {type: Schema.Types.ObjectId,ref: 'User'},
-    sender: { type: Schema.Types.ObjectId, ref: 'Club' },
+    recipient: { type: Schema.Types.ObjectId,ref: 'User' },
+    sender: { type: Schema.Types.ObjectId },
     message: { type: String, required: true },
     entityType: {
         type: String,
