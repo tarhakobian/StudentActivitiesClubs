@@ -11,6 +11,7 @@ const notificationSchema = new Schema({
         required: true
     },
     isRead: { type: Boolean, default: false },
+    scheduledForDeletion: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now },
 });
 
