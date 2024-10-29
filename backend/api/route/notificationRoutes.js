@@ -160,8 +160,8 @@ router.get('/:notificationId', authenticate, async (req, res, next) => {
 
 /**
  * @swagger
- * /notifications/{notificationId}/delete:
- *   patch:
+ * /notifications/{notificationId}:
+ *   delete:
  *     summary: Mark a notification for scheduled deletion
  *     description: Sets the `scheduledForDeletion` field to `true` for a specific notification, marking it for future deletion.
  *     tags:
@@ -240,7 +240,7 @@ router.get('/:notificationId', authenticate, async (req, res, next) => {
  *                   description: Error message
  *                   example: "Failed to mark notification for deletion. Please try again later."
  */
-router.patch('/:notificationId/delete', authenticate, async (req, res, next) => {
+router.delete('/:notificationId', authenticate, async (req, res, next) => {
     try {
         const userId = req.user.userId;
         const { notificationId } = req.params;
