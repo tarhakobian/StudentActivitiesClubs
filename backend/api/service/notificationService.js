@@ -23,7 +23,7 @@ async function notify(entityId, entityDetails, entityType) {
             const notification = new Notification({
                 recipient: a.userId,
                 sender: club._id,
-                message: `📢 New Announcement from ${club.title}!\n\n${message}\n\nDon't miss out—click to view the full details!\n\n${BASE_URL}club/announcements/${entityId} `, // Go to announcement by ID? or all announcements
+                message: `📢 New Announcement from ${club.title}!\n\n${message}\n\nDon't miss out—click to view the full details!\n\n${BASE_URL}/club/announcements/${entityId} `, // Go to announcement by ID? or all announcements
                 entityType: 'Announcement'
             });
     
@@ -39,7 +39,7 @@ async function notify(entityId, entityDetails, entityType) {
             const notification = new Notification({
                 recipient: a.userId,
                 sender: club._id,
-                message: `📅 New Meeting for ${club.title}!\n\n${message}\n\nSee the full details at: ${BASE_URL}club/meetings/${clubId}/${entityId}`, // Not sure if we should have it go to link BY meeting ID or just all meetings?
+                message: `📅 New Meeting for ${club.title}!\n\n${message}\n\nSee the full details at: ${BASE_URL}/club/meetings/${clubId}/${entityId}`, // Not sure if we should have it go to link BY meeting ID or just all meetings?
                 entityType: 'Meeting'
             });
     
