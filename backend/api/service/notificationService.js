@@ -7,46 +7,45 @@ const Notification = require('../../database/model/notificationModel')
 const { NotFoundError, AppError } = require('../errors/errors')
 
 
+const notificationMessages = {
+    Announcement: (club, message, entityId) =>
+        `📢 New Announcement from ${club.title}!\n\n${message}\n\nDon't miss out—click to view the full details!\n\n${BASE_URL}/club/announcements/${entityId}`,
+
+    Meeting: (club, message, entityId) =>
+        `📅 New Meeting for ${club.title}!\n\n${message}\n\nSee the full details at: ${BASE_URL}/club/meetings/${club._id}/${entityId}`
+};
+
 async function notify(entityId, entityDetails, entityType) {
     const clubId = entityDetails['clubId'];
-
     const club = await Club.findById(clubId).exec();
-
+    
     const associations = await Association.find({ clubId: clubId, role: 'Member' }).exec();
 
-    const BASE_URL = process.env.BASE_URL
-
+    let message;
     if (entityType === 'Announcement') {
         const content = entityDetails['content'];
-        const message = `${content.length > 30 ? content.slice(0, 30) + "..." : content}`; // Check if content is longer than 30 characters to display the dots (...)
-        const notificationPromises = associations.map(a => {
-            const notification = new Notification({
-                recipient: a.userId,
-                sender: club._id,
-                message: `📢 New Announcement from ${club.title}!\n\n${message}\n\nDon't miss out—click to view the full details!\n\n${BASE_URL}/club/announcements/${entityId} `, // Go to announcement by ID? or all announcements
-                entityType: 'Announcement'
-            });
-    
-            return notification.save();
-        });
-        await Promise.all(notificationPromises);
+        message = content.length > 30 ? content.slice(0, 30) + "..." : content;
+    } else if (entityType === 'Meeting') {
+        const title = entityDetails['title'];
+        message = title.length > 30 ? title.slice(0, 30) + "..." : title;
     }
 
-    if (entityType === 'Meeting') {
-        const title = entityDetails['title'];
-        const message = `${title.length > 30 ? title.slice(0, 30) + "..." : title}`; // Check if title is longer than 30 characters to display the dots (...)
-        const notificationPromises = associations.map(a => {
-            const notification = new Notification({
-                recipient: a.userId,
-                sender: club._id,
-                message: `📅 New Meeting for ${club.title}!\n\n${message}\n\nSee the full details at: ${BASE_URL}/club/meetings/${clubId}/${entityId}`, // Not sure if we should have it go to link BY meeting ID or just all meetings?
-                entityType: 'Meeting'
-            });
-    
-            return notification.save();
-        });
-        await Promise.all(notificationPromises);
+    const createMessage = notificationMessages[entityType];
+    if (!createMessage) {
+        throw new AppError(`Unsupported entityType: ${entityType}`);
     }
+
+    const notificationPromises = associations.map(a => {
+        const notification = new Notification({
+            recipient: a.userId,
+            sender: club._id,
+            message: createMessage(club, message, entityId),
+            entityType: entityType
+        });
+        return notification.save();
+    });
+
+    await Promise.all(notificationPromises);
 }
 
 const getNotificationsForUser = async function (userId) {
