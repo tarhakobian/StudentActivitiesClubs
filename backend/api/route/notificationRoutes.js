@@ -177,46 +177,16 @@ router.get('/:notificationId', authenticate, async (req, res, next) => {
  *       - bearerAuth: []
  *     responses:
  *       '200':
- *         description: Notification marked for deletion successfully
+ *         description: Notification was successfully deleted
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 _id:
- *                   type: string
- *                   description: The ID of the notification
- *                   example: "67204c0b9a81653dcc7900a0"
- *                 recipient:
- *                   type: string
- *                   description: ID of the user receiving the notification
- *                   example: "671ffdae6647534f3432ea8c"
- *                 sender:
- *                   type: string
- *                   description: ID of the user or club sending the notification
- *                   example: "671ffdad6647534f3432ea78"
- *                 message:
- *                   type: string
- *                   description: Content of the notification message
- *                   example: "📩 admin has requested to get in contact with you."
- *                 entityType:
- *                   type: string
- *                   description: Type of the notification
- *                   enum: [Announcement, Meeting, ContactRequest]
- *                   example: "ContactRequest"
- *                 isRead:
- *                   type: boolean
- *                   description: Whether the notification has been read
- *                   example: false
- *                 scheduledForDeletion:
- *                   type: boolean
- *                   description: Whether the notification is scheduled for deletion
- *                   example: true
- *                 createdAt:
- *                   type: string
- *                   format: date-time
- *                   description: Timestamp when the notification was created
- *                   example: "2024-10-29T02:44:27.105Z"
+ *                  message:
+ *                      type: string
+ *                      description: Successful deletion 
+ *                      example: "Notification was successfully deleted" 
  *       '404':
  *         description: Notification not found
  *         content:
@@ -247,7 +217,7 @@ router.delete('/:notificationId', authenticate, async (req, res, next) => {
 
         const notification = await notificationService.scheduleNotificationForDeletion(notificationId, userId);
 
-        res.status(200).json(notification);
+        res.status(200).json({ message: "Notification was successfully deleted" });
     } catch (error) {
         next(error)
     }
