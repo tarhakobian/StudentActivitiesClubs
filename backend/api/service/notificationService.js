@@ -113,6 +113,7 @@ const getNotificationById = async (notificationId, userId) => {
     if (!notification.isRead) {
         notification.isRead = true;
         await notification.save();
+        // After setting isRead = true AND SAVING IT, it's set BACK to false (but NOT saved as fakse) to let the frontent know this is the FIRST time 'reading' this notification
         notification.isRead = false;
     }
 
