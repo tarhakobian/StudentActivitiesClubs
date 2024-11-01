@@ -147,7 +147,7 @@ router.get('/:announcementId', authenticate, async (req, res, next) => {
  *      post:
  *        tags:
  *          - Announcements
- *        summary: Create a new announcement for a specific club
+ *        summary: Create a new announcement for a specific club along with a notification for that announcement
  *        description: This endpoint allows authenticated users to create an announcement for a specific club. The user must provide the title, content, and optionally, attachments.
  *        security:
  *          - bearerAuth: []

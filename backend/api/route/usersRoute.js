@@ -1,5 +1,5 @@
 const express = require('express');
-const { register, login, getUserProfileData } = require('../service/userService');
+const { register, login, getUserProfileData, contactRequest } = require('../service/userService');
 const { authenticate } = require("../middlewear/securityMiddlewear");
 const { BadRequestError } = require('../errors/errors');
 
@@ -176,5 +176,52 @@ router.get('/info/:userId', authenticate, async (req, res, next) => {
     }
 });
 
+/**
+ * @swagger
+ *  paths:
+ *    /users/{userId}:
+ *      post:
+ *        tags:
+ *          - Users
+ *        summary: Send a user a request to get in contact with them
+ *        description: This endpoint allows authenticated users to send another user a request to get into contact with them.
+ *        security:
+ *          - bearerAuth: [] 
+ *        parameters:
+ *          - in: path
+ *            name: userId
+ *            required: true
+ *            description: The unique identifier of the user to whom the contact request is being sent
+ *            schema:
+ *              type: string
+ *        responses:
+ *          200:
+ *            description: User contact request sent successfully
+ *            content:
+ *              application/json:
+ *                schema:
+ *                  type: object
+ *                  properties:
+ *                    notificationId:
+ *                      type: string
+ *                      description: The ID of the notification created for the contact request
+ *          404:
+ *            description: User not found - The specified user ID does not exist
+ *          401:
+ *            description: Unauthorized - The user is not authenticated
+ *          500:
+ *            description: Internal server error
+ */
+router.post('/:userId', authenticate, async (req, res, next) => {
+    try {
+        const targetUserId = req.params['userId'];
+        const userId = req.user.userId;
+        
+        const notificationId = await contactRequest(userId, targetUserId);
+        res.status(201).json({ notificationId });
+    } catch (error) {
+        next(error)
+    }
+});
 
 module.exports = router;

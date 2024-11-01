@@ -3,7 +3,6 @@ const clubService = require('../service/clubService');
 const notificationService = require('../service/notificationService')
 const { authenticate } = require('../middlewear/securityMiddlewear');
 const { BadRequestError } = require('../errors/errors');
-const Notification = require('../../database/model/notificationModel')
 
 const router = express.Router();
 
@@ -67,7 +66,7 @@ const router = express.Router();
  *                   type: string
  *                   example: "Internal server error"
  */
-router.get('/', async (req, res, next) => {
+router.get('/', authenticate, async (req, res, next) => {
     try {
         const userId = req.user.userId;
         const notifications = await notificationService.getNotificationsForUser(userId);
@@ -146,7 +145,7 @@ router.get('/', async (req, res, next) => {
  *                   type: string
  *                   example: "Internal server error"
  */
-router.get('/:notificationId', async (req, res, next) => {
+router.get('/:notificationId', authenticate, async (req, res, next) => {
     try {
         const userId = req.user.userId;
         const { notificationId } = req.params;
@@ -154,6 +153,71 @@ router.get('/:notificationId', async (req, res, next) => {
         const notification = await notificationService.getNotificationById(notificationId, userId);
 
         res.status(200).json(notification);
+    } catch (error) {
+        next(error)
+    }
+});
+
+/**
+ * @swagger
+ * /notifications/{notificationId}:
+ *   delete:
+ *     summary: Mark a notification for scheduled deletion
+ *     description: Sets the `scheduledForDeletion` field to `true` for a specific notification, marking it for future deletion.
+ *     tags:
+ *       - Notifications
+ *     parameters:
+ *       - in: path
+ *         name: notificationId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the notification to mark for deletion
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: Notification was successfully deleted
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                  message:
+ *                      type: string
+ *                      description: Successful deletion 
+ *                      example: "Notification was successfully deleted" 
+ *       '404':
+ *         description: Notification not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   description: Error message
+ *                   example: "Notification not found for ID: 67204c0b9a81653dcc7900a0"
+ *       '500':
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   description: Error message
+ *                   example: "Failed to mark notification for deletion. Please try again later."
+ */
+router.delete('/:notificationId', authenticate, async (req, res, next) => {
+    try {
+        const userId = req.user.userId;
+        const { notificationId } = req.params;
+
+        const notification = await notificationService.scheduleNotificationForDeletion(notificationId, userId);
+
+        res.status(200).json({ message: "Notification was successfully deleted" });
     } catch (error) {
         next(error)
     }

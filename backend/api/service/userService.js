@@ -1,5 +1,6 @@
 const User = require("../../database/model/userModel");
 const Association = require('../../database/model/associationModel')
+const Notification = require('../../database/model/notificationModel');
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { NotFoundError, DuplicateUserError, PasswordValidationError, BadRequestError } = require("../errors/errors");
@@ -101,5 +102,31 @@ async function getUserProfileData(userId, targetUserId) {
     }
 }
 
-module.exports = { register, login, getUserProfileData, findUserById }
+async function contactRequest(userId, targetUserId) {
+    const user = await User.findById(userId).exec();
+    const targetUser = await User.findById(targetUserId).exec();
+    
+    if (!user) {
+        throw new NotFoundError(`User not found with id - ${userId}`);
+    }
+    if (!targetUser) {
+        throw new NotFoundError(`User not found with id - ${targetUserId}`);
+    }
 
+    const BASE_URL = process.env.BASE_URL;
+
+    const message = `📩 ${user.name} has requested to get in contact with you.\n\nClick to view their profile: ${BASE_URL}users/${userId}`;
+
+    const notification = new Notification({
+        recipient: targetUserId,
+        sender: userId,
+        message,
+        entityType: 'ContactRequest'
+    });
+
+    const savedNotification = await notification.save();
+
+    return savedNotification._id;
+}
+
+module.exports = { register, login, getUserProfileData, findUserById, contactRequest }

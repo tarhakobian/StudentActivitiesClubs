@@ -221,7 +221,7 @@ router.get('/:clubId/:meetingId/participants', authenticate, async (req, res, ne
  *      post:
  *        tags:
  *          - Meetings
- *        summary: Create a new meeting for a specific club
+ *        summary: Create a new meeting for a specific club along with a notification for that meeting
  *        description: This endpoint allows authenticated users to create a new meeting associated with a specific club ID.
  *        security:
  *          - bearerAuth: []
