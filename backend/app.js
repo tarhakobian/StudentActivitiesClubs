@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 
 const clubRoutes = require('./api/route/clubsRoute');
 const userRoutes = require('./api/route/usersRoute');
@@ -15,6 +16,7 @@ const { errorMiddlewear } = require('./api/middlewear/errorMiddlewear');
 const app = express();
 
 app.use(express.json());
+app.use(cors());
 
 app.use('/users', userRoutes);
 app.use('/clubs', clubRoutes);

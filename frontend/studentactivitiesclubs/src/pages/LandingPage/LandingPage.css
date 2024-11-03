@@ -1,0 +1,73 @@
+/* General styling for the main container */
+main {
+    padding: 20px;
+    background-color: #f8f9fa; /* Light background for the main content */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center content horizontally */
+}
+
+/* Styling for the title */
+h2 {
+    font-size: 28px;
+    margin-bottom: 20px;
+    color: #333; /* Darker color for the title */
+}
+
+/* Flex container for club cards */
+.card-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center; /* Center the cards horizontally */
+    max-width: 1200px; /* Set a max width for the container */
+    margin: 0 auto; /* Center the container itself */
+}
+
+/* Styling for each card */
+.card {
+    width: 220px; /* Slightly larger card width */
+    padding: 15px;
+    background-color: #fff; /* White background for cards */
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Subtle shadow for depth */
+    text-align: center;
+    transition: transform 0.2s; /* Animation for hover effect */
+}
+
+/* Add hover effect for cards */
+.card:hover {
+    transform: scale(1.05); /* Slightly enlarge card on hover */
+}
+
+/* Title styling inside each card */
+.card h3 {
+    font-size: 20px;
+    color: #333;
+    margin: 10px 0; /* Add margin to title */
+}
+
+/* Image styling inside each card */
+.card img {
+    width: 100%; /* Make the image responsive */
+    height: auto; /* Maintain aspect ratio */
+    border-radius: 4px; /* Slight rounding of corners */
+}
+
+/* Description paragraph styling inside each card */
+.card p {
+    font-size: 14px;
+    color: #666;
+    margin-top: 5px; /* Margin above description */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card-container {
+        gap: 15px; /* Reduce gap between cards */
+    }
+
+    .card {
+        width: 90%; /* Full-width cards on small screens */
+    }
+}
