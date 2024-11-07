@@ -1,8 +1,10 @@
 const express = require('express');
 const multer = require('multer');
+const { uploadFileToSpace } = require('../service/s3Service');  
 const router = express.Router();
 
-const storage = multer.memoryStorage(); 
+// Configure Multer to use memory storage
+const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 /**
@@ -34,17 +36,24 @@ const upload = multer({ storage: storage });
  *            description: Internal server error
  */
 
-router.post('/single', upload.single('file'), (req, res, next) => {
+router.post('/single', upload.single('file'), async (req, res, next) => {
     try {
-        // Error checking
         if (!req.file) {
             return res.status(400).send('No file uploaded.');
         }
 
-        console.log('Uploaded file name:', req.file.originalname);
+        // sets upload directory
+        const directory = 'upload';
+        // Upload file to DigitalOcean Spaces and get the URL
+        const fileUrl = await uploadFileToSpace(req.file, directory);
 
-        res.status(200).send('File uploaded successfully.');
+        // Send the URL back in the response
+        res.status(200).json({
+            message: 'File uploaded successfully',
+            fileUrl: fileUrl
+        });
     } catch (error) {
+        console.error('Error uploading file:', error);
         next(error);
     }
 });
