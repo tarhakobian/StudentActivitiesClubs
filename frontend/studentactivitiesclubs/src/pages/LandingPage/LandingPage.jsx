@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
-import {fetchClubs} from '../../api/clubs'
+import { fetchClubs } from '../../api/clubs'
 import './LandingPage.css';
 
 function LandingPage() {
@@ -11,18 +11,18 @@ function LandingPage() {
 
   useEffect(() => {
     const getClubs = async () => {
-      setLoading(true); 
+      setLoading(true);
       try {
-        const clubsData = await fetchClubs(); 
-        setClubs(clubsData); 
+        const clubsData = await fetchClubs();
+        setClubs(clubsData);
       } catch (err) {
-        setError(err.message); 
+        setError(err.message);
       } finally {
-        setLoading(false); 
+        setLoading(false);
       }
     };
 
-    getClubs(); 
+    getClubs();
   }, []);
 
   if (loading) {
