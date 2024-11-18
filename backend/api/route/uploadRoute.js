@@ -1,6 +1,7 @@
 const express = require('express');
 const multer = require('multer');
-const { uploadFileToSpace } = require('../service/s3Service');  
+const { uploadFileToSpace } = require('../service/storageService');  
+const { authenticate } = require('../middlewear/securityMiddlewear');
 const router = express.Router();
 
 // Configure Multer to use memory storage
@@ -42,12 +43,9 @@ router.post('/single', upload.single('file'), async (req, res, next) => {
             return res.status(400).send('No file uploaded.');
         }
 
-        // sets upload directory
-        const directory = 'upload';
         // Upload file to DigitalOcean Spaces and get the URL
-        const fileUrl = await uploadFileToSpace(req.file, directory);
+        const fileUrl = await uploadFileToSpace(req.file);
 
-        // Send the URL back in the response
         res.status(200).json({
             message: 'File uploaded successfully',
             fileUrl: fileUrl
