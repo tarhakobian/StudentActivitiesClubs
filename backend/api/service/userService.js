@@ -64,10 +64,14 @@ async function login(email, password) {
 }
 
 async function getUserProfileData(userId, targetUserId) {
-    let user = await User.findOne({ _id: userId }).exec();
+    let loggedInUser = await User.findOne({ _id: userId }).exec();
     let targetUser = await User.findOne({ _id: targetUserId }).exec();
 
-    if (!user) {
+    if (userId == targetUserId) {
+        
+    }
+
+    if (!loggedInUser) {
         throw new NotFoundError(`User not found with id - ${userId}`);
     }
 
@@ -75,20 +79,18 @@ async function getUserProfileData(userId, targetUserId) {
         throw new NotFoundError(`User not found with id - ${targetUserId}`);
     }
 
+    async function findAssociatedClubIds(user) {
+        let userAssociationsPromises = user.associations.map(associaition => Association.findOne({ _id: associaition._id }));
 
-    //Building associations array with clubIds for user
-    let userAssociationsPromises = user.associations.map(associaition => Association.findOne({ _id: associaition._id }));
+        let userAssociations = await Promise.all(userAssociationsPromises);
 
-    let userAssociations = await Promise.all(userAssociationsPromises)
-
-    userAssociations = userAssociations.map(association => association.clubId.toString())
-
-    //Building associations array with clubIds for targetUser
-    let targetUserAssociationsPromises = targetUser.associations.map(associaition => Association.findOne({ _id: associaition._id }));
-
-    let targetUserAssociations = await Promise.all(targetUserAssociationsPromises)
-
-    targetUserAssociations = targetUserAssociations.map(association => association.clubId.toString())
+        userAssociations = userAssociations.map(association => association.clubId.toString());
+        return userAssociations;
+    }
+    
+    //Building associations array with clubIds for user and target user
+    let userAssociations = await findAssociatedClubIds(loggedInUser);
+    let targetUserAssociations = await findAssociatedClubIds(targetUser);
 
     let commonClubIds = (targetUserAssociations && userAssociations && targetUserAssociations.length > 0 && userAssociations.length > 0)
         ? targetUserAssociations.filter(value => userAssociations.includes(value)) : []

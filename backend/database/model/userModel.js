@@ -26,7 +26,7 @@ const userSchema = new Schema({
     },
     profileImageUrl: {
         type: String,
-        default: 'https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.istockphoto.com%2Fphotos%2Fuser-profile&psig=AOvVaw2fKyfXwYmS5ntFVgwcfcnX&ust=1725521939159000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCKjFyqXkqIgDFQAAAAAdAAAAABAE'
+        default: 'https://studentactivitesclubs.nyc3.cdn.digitaloceanspaces.com/6ce296d6-7501-4b6f-9124-6553403d3a45.jpg'
     },
     //
     

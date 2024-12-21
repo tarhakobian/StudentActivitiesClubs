@@ -12,8 +12,6 @@ const s3Client = new S3Client({
         accessKeyId: process.env.DO_SPACES_ACCESS_KEY,
         secretAccessKey: process.env.DO_SPACES_SECRET_KEY,
     },
-
-    // signatureVersion: 'v4',  // DigitalOcean requires signature version 4
 });
 
 const uploadFileToSpace = async (file, directory = '') => {
