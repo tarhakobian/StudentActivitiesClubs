@@ -217,7 +217,7 @@ router.post('/:clubId', authenticate, upload.array('files'), async (req, res, ne
     const clubId = req.params['clubId'];
 
     if (!title || !content || !clubId) {
-        return res.status(400).send('Missing title, content, or clubId');
+        throw new MissingParametersError();
     }
 
     try {
