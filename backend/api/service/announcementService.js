@@ -6,6 +6,7 @@ const { ensureOwnership } = require('./authService')
 const { notify } = require('./notificationService')
 const { mapAnnuncement } = require('./mapperService');
 const Association = require('../../database/model/associationModel');
+const { uploadFileToSpace } = require('./storageService')
 
 
 async function getAllAnnouncements(clubId, userId) {
@@ -48,7 +49,21 @@ async function createAnnouncement(announcementDetails) {
         throw new CabinetMemberRequiredError("Unauthorized action")
     }
 
-    const announcement = await new Announcement(announcementDetails).save();
+    // Handle the file uploads if a file actually exist
+    let attachments = [];
+    if (announcementDetails.files && announcementDetails.files.length > 0) {
+        attachments = await Promise.all(
+            announcementDetails.files.map(file => uploadFileToSpace(file)) // Upload each file and collect URLs
+        );
+    }
+
+    // Create the announcement; add the attachments URLs to the details
+    const announcementData = {
+        ...announcementDetails,
+        attachments,
+    };
+
+    const announcement = await new Announcement(announcementData).save();
 
     notify(announcement._id, announcementDetails, "Announcement")
 

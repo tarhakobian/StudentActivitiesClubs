@@ -2,8 +2,11 @@ const express = require('express');
 const announcementService = require('../service/announcementService');
 const { authenticate } = require('../middlewear/securityMiddlewear');
 const { MissingParametersError } = require('../errors/errors');
+const multer = require('multer');
+const { uploadFileToSpace } = require('../service/storageService');
 
 const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage() });
 
 //TODO:  Make a route for club's cabinet to access announcement that are not active but hasn't been deleted yet.
 
@@ -142,89 +145,89 @@ router.get('/:announcementId', authenticate, async (req, res, next) => {
 
 /**
  * @swagger
- *  paths:
- *    /club/announcements/{clubId}:
- *      post:
- *        tags:
- *          - Announcements
- *        summary: Create a new announcement for a specific club along with a notification for that announcement
- *        description: This endpoint allows authenticated users to create an announcement for a specific club. The user must provide the title, content, and optionally, attachments.
- *        security:
- *          - bearerAuth: []
- *        parameters:
- *          - in: path
- *            name: clubId
- *            required: true
- *            description: The unique identifier of the club
- *            schema:
- *              type: string
- *        requestBody:
- *          required: true
- *          content:
- *            application/json:
- *              schema:
- *                type: object
- *                properties:
- *                  title:
- *                    type: string
- *                    description: The title of the announcement
- *                  content:
- *                    type: string
- *                    description: The body/content of the announcement
- *                  attachments:
- *                    type: array
- *                    items:
- *                      type: string
- *                    description: Optional attachments related to the announcement
- *              example:
- *                title: "Club Announcement 1"
- *                content: "Content 1"
- *                attachments:
- *                  - "https://example.com/meeting-agenda.pdf"
- *                  - "https://example.com/meeting-slides.pptx"
- *        responses:
- *          201:
- *            description: Announcement created successfully
- *            content:
- *              application/json:
- *                schema:
- *                  type: object
- *                  properties:
- *                    message:
- *                      type: string
- *                      description: Success message
- *                    announcement:
- *                      type: string
- *                      description: The unique identifier of the created announcement
- *          400:
- *            description: Bad request - Missing required parameters
- *          401:
- *            description: Unauthorized - The user is not authenticated
- *          403:
- *            description: Forbidden - The user is not authorized to create an announcement for this club
- *          500:
- *            description: Internal server error
+ * paths:
+ *   /club/announcements/{clubId}:
+ *     post:
+ *       tags:
+ *         - Announcements
+ *       summary: Create a new announcement for a specific club along with a notification for that announcement
+ *       description: This endpoint allows authenticated users to create an announcement for a specific club. The user must provide the title, content, and optionally upload files as attachments.
+ *       security:
+ *         - bearerAuth: []
+ *       parameters:
+ *         - in: path
+ *           name: clubId
+ *           required: true
+ *           description: The unique identifier of the club
+ *           schema:
+ *             type: string
+ *       requestBody:
+ *         required: true
+ *         content:
+ *           multipart/form-data:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 title:
+ *                   type: string
+ *                   description: The title of the announcement
+ *                   example: "Club Announcement"
+ *                 content:
+ *                   type: string
+ *                   description: The body/content of the announcement
+ *                   example: "Don't forget the club meeting tomorrow at 5 PM."
+ *                 files:
+ *                   type: array
+ *                   description: Optional files to attach to the announcement
+ *                   items:
+ *                     type: string
+ *                     format: binary
+ *       responses:
+ *         201:
+ *           description: Announcement created successfully
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *                     description: Success message
+ *                   announcement:
+ *                     type: string
+ *                     description: The unique identifier of the created announcement
+ *                   attachments:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *                     description: URLs of the uploaded files
+ *         400:
+ *           description: Bad request - Missing required parameters
+ *         401:
+ *           description: Unauthorized - The user is not authenticated
+ *         403:
+ *           description: Forbidden - The user is not authorized to create an announcement for this club
+ *         500:
+ *           description: Internal server error
  */
-router.post('/:clubId', authenticate, async (req, res, next) => {
+
+router.post('/:clubId', authenticate, upload.array('files'), async (req, res, next) => {
+    const { title, content } = req.body;
+    const userId = req.user.userId;
+    const clubId = req.params['clubId'];
+
+    if (!title || !content || !clubId) {
+        return res.status(400).send('Missing title, content, or clubId');
+    }
+
     try {
-        const { title, content, attachments } = req.body;
-
-        const userId = req.user.userId;
-        const clubId = req.params['clubId'];
-
-        if (!title || !content || !clubId) {
-            throw new MissingParametersError();
-        }
-
-        const announcementDetails = {
+        const announcementId = await announcementService.createAnnouncement({
             title,
             content,
             authorId: userId,
             clubId,
-            attachments: attachments || [],
-        };
-
-        const announcementId = await announcementService.createAnnouncement(announcementDetails);
+            files: req.files,
+        });
 
         res.status(201).json({
             message: 'Announcement created successfully',
@@ -234,6 +237,8 @@ router.post('/:clubId', authenticate, async (req, res, next) => {
         next(err);
     }
 });
+
+
 
 /**
  * @swagger
