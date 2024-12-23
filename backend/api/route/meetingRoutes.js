@@ -1,6 +1,9 @@
 const express = require('express');
 const { createMeeting, rsvpMeeting, deleteMeeting, leaveMeeting, getAllMeetings, getMeetingById, getAllParticipants, toggleMeetingActive, updateMeeting, meetingsChangeActiveStatus } = require('../service/meetingService');
 const { authenticate } = require('../middlewear/securityMiddlewear');
+const multer = require('multer');
+
+const upload = multer();
 
 const router = express.Router();
 
@@ -216,85 +219,103 @@ router.get('/:clubId/:meetingId/participants', authenticate, async (req, res, ne
 
 /**
  * @swagger
- *  paths:
- *    /club/meetings/{clubId}:
- *      post:
- *        tags:
- *          - Meetings
- *        summary: Create a new meeting for a specific club along with a notification for that meeting
- *        description: This endpoint allows authenticated users to create a new meeting associated with a specific club ID.
- *        security:
- *          - bearerAuth: []
- *        parameters:
- *          - in: path
- *            name: clubId
- *            required: true
- *            description: The ID of the club for which the meeting is being created.
- *            schema:
- *              type: string
- *        requestBody:
- *          required: true
- *          content:
- *            application/json:
- *              schema:
- *                type: object
- *                properties:
- *                  title:
- *                    type: string
- *                    description: The title of the meeting.
- *                  agenda:
- *                      type: string
- *                      description: The agenda of the meeting.
- *                  date:
- *                    type: string
- *                    format: date-time
- *                    description: The date and time of the meeting.
- *                  location:
- *                    type: string
- *                    description: The location of the meeting.
- *                  description:
- *                    type: string
- *                    description: A brief description of the meeting.
- *        responses:
- *          201:
- *            description: Meeting created successfully.
- *            content:
- *              application/json:
- *                schema:
- *                  type: object
- *                  properties:
- *                    id:
- *                      type: string
- *                      description: The unique identifier for the newly created meeting.
- *                    title:
- *                      type: string
- *                      description: The title of the meeting.
- *                    date:
- *                      type: string
- *                      format: date-time
- *                      description: The date and time of the meeting.
- *                    location:
- *                      type: string
- *                      description: The location of the meeting.
- *                    description:
- *                      type: string
- *                      description: A brief description of the meeting.
- *          401:
- *            description: Unauthorized - invalid or missing authentication token.
- *          400:
- *            description: Bad Request - required fields are missing or invalid.
- *          500:
- *            description: Internal server error
+ * paths:
+ *   /club/meetings/{clubId}:
+ *     post:
+ *       tags:
+ *         - Meetings
+ *       summary: Create a new meeting for a specific club along with a notification for that meeting
+ *       description: This endpoint allows authenticated users to create a new meeting associated with a specific club ID. The user must provide meeting details and can optionally upload files.
+ *       security:
+ *         - bearerAuth: []
+ *       parameters:
+ *         - in: path
+ *           name: clubId
+ *           required: true
+ *           description: The unique identifier of the club for which the meeting is being created.
+ *           schema:
+ *             type: string
+ *       requestBody:
+ *         required: true
+ *         content:
+ *           multipart/form-data:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 title:
+ *                   type: string
+ *                   description: The title of the meeting.
+ *                   example: "Monthly Club Meeting"
+ *                 agenda:
+ *                   type: string
+ *                   description: The agenda of the meeting.
+ *                   example: "Discuss club activities for the upcoming month."
+ *                 date:
+ *                   type: string
+ *                   format: date-time
+ *                   description: The date and time of the meeting.
+ *                   example: "2024-12-25T17:00:00Z"
+ *                 location:
+ *                   type: string
+ *                   description: The location of the meeting.
+ *                   example: "Room 101, Clubhouse"
+ *                 files:
+ *                   type: array
+ *                   description: Optional files to attach to the meeting.
+ *                   items:
+ *                     type: string
+ *                     format: binary
+ *       responses:
+ *         201:
+ *           description: Meeting created successfully
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   message:
+ *                     type: string
+ *                     description: Success message
+ *                   meetingId:
+ *                     type: string
+ *                     description: The unique identifier of the newly created meeting.
+ *         400:
+ *           description: Bad request - Missing required parameters
+ *         401:
+ *           description: Unauthorized - The user is not authenticated or not authorized to create a meeting for this club
+ *         403:
+ *           description: Forbidden - The user does not have sufficient permissions to create a meeting for this club
+ *         500:
+ *           description: Internal server error
  */
-router.post('/:clubId', authenticate, async (req, res, next) => {
-    try {
-        const userId = req.user.userId;
-        const clubId = req.params['clubId'];
+router.post('/:clubId', authenticate, upload.array('files'), async (req, res, next) => {
+    const userId = req.user.userId;
+    const clubId = req.params['clubId'];
 
-        const meeting = await createMeeting(clubId, userId, req.body);
-        return res.status(201).json(meeting);
-    } catch (error) {
-        next(error)
+    const { title, agenda, date, location } = req.body;
+
+    if (!title || !agenda || !date || !location) {
+        throw new MissingParametersError();
+    }
+
+    try {
+        // Pass the necessary data and files to the service function
+        const meetingId = await createMeeting({
+            title,
+            agenda,
+            date,
+            location,
+            authorId: userId,
+            clubId,
+            files: req.files,
+        });
+
+        res.status(201).json({
+            message: 'Meeting created successfully',
+            meetingId,
+        });
+    } catch (err) {
+        next(err);
     }
 });
 

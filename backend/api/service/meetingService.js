@@ -5,30 +5,37 @@ const { notify } = require('./notificationService')
 const { ensureOwnership } = require('./authService');
 const { findUserById } = require('./userService');
 const { UnauthorizedError, BadRequestError, NotFoundError } = require('../errors/errors');
+const { uploadFileToSpace } = require('./storageService');
 
 // Create a new meeting
-async function createMeeting(clubId, userId, body) {
-    const role = await ensureOwnership(clubId, userId)
+async function createMeeting({ title, agenda, date, location, authorId, clubId, files }) {
+    const role = await ensureOwnership(clubId, authorId);
 
     if (role === 'Member') {
-        throw new UnauthorizedError("Unauthorized")
+        throw new UnauthorizedError("Unauthorized");
     }
 
-    const { title, agenda, date, location, attachments } = body;
-
-    if (!title || !agenda || !date || !location) {
-        throw new BadRequestError("All fields (title, agenda, date, location) must be provided and non-null.");
-    }
+    // Upload files and get URLs
+    const fileUploadPromises = files.map(file => uploadFileToSpace(file, 'meetings'));
+    const attachmentUrls = await Promise.all(fileUploadPromises);
 
     const meeting = new Meeting({
-        title, agenda, date, location, attachments, authorId: userId, clubId, lastUpdatedAt: new Date, lastUpdatedBy: userId
+        title,
+        agenda,
+        date,
+        location,
+        attachments: attachmentUrls,
+        authorId,
+        clubId,
+        lastUpdatedAt: new Date(),
+        lastUpdatedBy: authorId,
     });
 
     await meeting.save();
 
-    notify(meeting._id, meeting, "Meeting")
+    notify(meeting._id, meeting, "Meeting");
 
-    return meeting._id
+    return meeting._id;
 }
 
 // RSVP a meeting as a participant
