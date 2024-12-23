@@ -11,10 +11,10 @@ const meetingService = require('../service/meetingService');
 
 const notificationMessages = {
     Announcement: (club, message, entityId) =>
-        `📢 New Announcement from ${club.title}!\n\n${message}\n\nDon't miss out—click to view the full details!\n\n${BASE_URL}/club/announcements/${entityId}`,
+        `📢 New Announcement from ${club.title}!\n\n${message}\n\nDon't miss out—click to view the full details!\n\n${process.env.BASE_URL}/club/announcements/${entityId}`,
 
     Meeting: (club, message, entityId) =>
-        `📅 New Meeting for ${club.title}!\n\n${message}\n\nSee the full details at: ${BASE_URL}/club/meetings/${club._id}/${entityId}`
+        `📅 New Meeting for ${club.title}!\n\n${message}\n\nSee the full details at: ${process.env.BASE_URL}/club/meetings/${club._id}/${entityId}`
 };
 
 async function notify(entityId, entityDetails, entityType) {
